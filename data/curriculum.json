@@ -1,0 +1,114 @@
+{
+  "language": "Korean",
+  "sections": [
+    {
+      "id": 1,
+      "name": "Dasar Hangul",
+      "level": "Huruf & Cara Baca",
+      "units": [
+        {
+          "id": 1,
+          "title": "Konsonan",
+          "type": "session",
+          "category": "Hangul_Konsonan",
+          "progress_id": "Hangul_Konsonan",
+          "icon": "fas fa-font"
+        },
+        {
+          "id": 2,
+          "title": "Vokal",
+          "type": "session",
+          "category": "Hangul_Vokal",
+          "progress_id": "Hangul_Vokal",
+          "icon": "fas fa-adjust"
+        },
+        {
+          "id": 3,
+          "title": "Merangkai Huruf",
+          "type": "session",
+          "category": "Hangul_Assembly",
+          "progress_id": "Hangul_Assembly",
+          "icon": "fas fa-cubes"
+        },
+        {
+          "id": 4,
+          "title": "Aturan Baca",
+          "type": "lesson",
+          "link": "/lesson/intro",
+          "progress_id": "hangul_intro",
+          "icon": "fas fa-book-open"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Rookie",
+      "level": "Beginner",
+      "units": [
+        {
+          "id": 5,
+          "title": "Salam",
+          "type": "session",
+          "category": "Salam",
+          "progress_id": "Salam",
+          "icon": "fas fa-hand-sparkles"
+        },
+        {
+          "id": 6,
+          "title": "Angka",
+          "type": "session",
+          "category": "Angka",
+          "progress_id": "Angka",
+          "icon": "fas fa-list-ol"
+        },
+        {
+          "id": 7,
+          "title": "Keluarga",
+          "type": "session",
+          "category": "Keluarga",
+          "progress_id": "Keluarga",
+          "icon": "fas fa-users"
+        },
+        {
+          "id": 8,
+          "title": "Makanan",
+          "type": "session",
+          "category": "Makanan",
+          "progress_id": "Makanan",
+          "icon": "fas fa-utensils"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Explorer",
+      "level": "A1",
+      "units": [
+        {
+          "id": 9,
+          "title": "Hobi",
+          "type": "session",
+          "category": "Hobi",
+          "progress_id": "Hobi",
+          "icon": "fas fa-gamepad"
+        },
+        {
+          "id": 10,
+          "title": "Sekolah",
+          "type": "session",
+          "category": "Sekolah",
+          "progress_id": "Sekolah",
+          "icon": "fas fa-school"
+        },
+        {
+          "id": 11,
+          "title": "Transportasi",
+          "type": "session",
+          "category": "Transportasi",
+          "progress_id": "Transportasi",
+          "icon": "fas fa-bus"
+        }
+      ]
+    }
+  ]
+}

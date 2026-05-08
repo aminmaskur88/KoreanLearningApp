@@ -1,7 +1,15 @@
 from flask import Blueprint, jsonify, request, current_app
 import sqlite3
 
+import json
+import os
+
 api_bp = Blueprint('api', __name__)
+
+@api_bp.route('/curriculum')
+def get_curriculum():
+    with open('data/curriculum.json', 'r') as f:
+        return jsonify(json.load(f))
 
 def get_db_connection():
     conn = sqlite3.connect(current_app.config['DATABASE'])
@@ -69,3 +77,22 @@ def update_xp():
     conn.close()
     
     return jsonify({'status': 'success', 'new_xp': new_xp, 'new_level': new_level})
+
+@api_bp.route('/progress')
+def get_progress():
+    conn = get_db_connection()
+    progress = conn.execute('SELECT category FROM category_progress WHERE user_id = 1 AND completed = 1').fetchall()
+    conn.close()
+    return jsonify([row['category'] for row in progress])
+
+@api_bp.route('/complete_category', methods=['POST'])
+def complete_category():
+    data = request.json
+    category = data.get('category')
+    
+    conn = get_db_connection()
+    conn.execute('INSERT OR REPLACE INTO category_progress (user_id, category, completed) VALUES (1, ?, 1)', (category,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'status': 'success'})

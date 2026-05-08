@@ -70,16 +70,13 @@ def init_db():
     )
     ''')
 
-    # Create daily_missions table
+    # Create category_progress table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS daily_missions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS category_progress (
         user_id INTEGER,
-        mission_type TEXT,
-        target INTEGER,
-        progress INTEGER DEFAULT 0,
+        category TEXT,
         completed BOOLEAN DEFAULT 0,
-        FOREIGN KEY(user_id) REFERENCES users(id)
+        PRIMARY KEY(user_id, category)
     )
     ''')
 

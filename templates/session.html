@@ -224,6 +224,7 @@ main { padding: 0; max-width: 100%; height: 100vh; }
 .char-bubble:active { transform: translateY(2px); box-shadow: none; }
 .char-bubble.used { opacity: 0.3; pointer-events: none; }
 
+/* Selected Char used in bank/writing area */
 .selected-char {
     background: var(--secondary);
     color: white;
@@ -232,6 +233,64 @@ main { padding: 0; max-width: 100%; height: 100vh; }
     border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
+}
+
+/* Assembly Visuals */
+.assembly-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.hangul-block-frame {
+    width: 120px;
+    height: 120px;
+    border: 3px dashed var(--border);
+    border-radius: 20px;
+    display: grid;
+    padding: 10px;
+    gap: 10px;
+    background: rgba(0,0,0,0.02);
+}
+
+.horizontal-stack { grid-template-columns: 1fr 1fr; }
+.vertical-stack { grid-template-rows: 1fr 1fr; }
+
+.slot {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.slot.filled {
+    color: var(--secondary);
+    border-color: var(--secondary);
+    background: #e5f5ff;
+}
+
+.assembly-arrow { font-size: 2rem; color: var(--border); }
+
+.assembly-final {
+    width: 100px;
+    height: 100px;
+    background: var(--primary);
+    color: white;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3.5rem;
+    font-weight: 900;
+    box-shadow: 0 6px 0 0 var(--primary-dark);
 }
 
 /* Speaking Challenge */
@@ -302,54 +361,164 @@ main { padding: 0; max-width: 100%; height: 100vh; }
     font-size: 1.5rem;
 }
 
-.session-footer.correct { background: #d7ffb8; }
+.session-footer.correct { background: #d7ffb8; color: #46a302; }
 .session-footer.correct .feedback-icon-container { background: white; color: var(--primary); }
-.session-footer.correct h3 { color: var(--primary-dark); }
+.session-footer.correct h3, .session-footer.correct p { color: #46a302 !important; }
 
-.session-footer.wrong { background: #ffdfe0; }
+.session-footer.wrong { background: #ffdfe0; color: #ea2b2b; }
 .session-footer.wrong .feedback-icon-container { background: white; color: var(--danger); }
-.session-footer.wrong h3 { color: var(--danger-dark); }
+.session-footer.wrong h3, .session-footer.wrong p { color: #ea2b2b !important; }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-const category = "{{ category }}";
-let steps = [];
-let currentStepIdx = 0;
-let isAnswered = false;
-let selectedCardId = null;
-
-let allVocabPool = [];
+var category = "{{ category }}";
+var steps = [];
+var currentStepIdx = 0;
+var isAnswered = false;
+var selectedCardId = null;
+var allVocabPool = [];
+var hearts = 5;
 
 async function initSession() {
     try {
-        const response = await fetch(`/api/vocabulary?category=${encodeURIComponent(category)}`);
-        const vocab = await response.json();
-        
-        const allRes = await fetch('/api/vocabulary');
-        allVocabPool = await allRes.json();
-        
-        if (vocab.length === 0) {
-            showAlert("Info", "Materi untuk kategori ini belum tersedia.", () => {
-                window.location.href = "/";
+        let vocab = [];
+        if (category.startsWith('Hangul')) {
+            const response = await fetch('/api/hangul');
+            const hangul = await response.json();
+            
+            let selected = [];
+            if (category === 'Hangul_Konsonan') {
+                selected = hangul.filter(h => h.type === 'Konsonan').sort(() => Math.random() - 0.5).slice(0, 8);
+            } else if (category === 'Hangul_Vokal') {
+                selected = hangul.filter(h => h.type === 'Vokal').sort(() => Math.random() - 0.5).slice(0, 8);
+            } else if (category === 'Hangul_Assembly' || category === 'Hangul') {
+                selected = hangul.sort(() => Math.random() - 0.5).slice(0, 8);
+            }
+            
+            selected.forEach(item => {
+                // Intro step
+                steps.push({ 
+                    type: 'intro_char', 
+                    data: { 
+                        korean: item.char, 
+                        meaning: item.name, 
+                        romanization: item.romanization,
+                        example: item.pronunciation 
+                    } 
+                });
+                
+                // Sound to Char
+                steps.push({ 
+                    type: 'choice_char', 
+                    data: item, 
+                    question: `Pilih huruf untuk bunyi "${item.romanization}":`,
+                    options: generateHangulOptions(item, hangul) 
+                });
+                
+                // Char to Sound
+                steps.push({ 
+                    type: 'choice_sound', 
+                    data: item, 
+                    question: `Apa bunyi dari huruf "${item.char}"?`,
+                    options: generateSoundOptions(item, hangul) 
+                });
             });
-            return;
+
+            // Add assembly tasks if appropriate
+            if (category === 'Hangul_Assembly' || category === 'Hangul') {
+                const consonants = hangul.filter(h => h.type === 'Konsonan');
+                const vowels = hangul.filter(h => h.type === 'Vokal');
+                for (let i = 0; i < 4; i++) {
+                    const c = consonants[Math.floor(Math.random() * consonants.length)];
+                    const v = vowels[Math.floor(Math.random() * vowels.length)];
+                    steps.push({
+                        type: 'assemble_hangul',
+                        data: {
+                            result: combine(c.char, v.char),
+                            parts: [c.char, v.char],
+                            roman: c.romanization.split('/')[0] + v.romanization
+                        }
+                    });
+                }
+            }
+        } else {
+            const response = await fetch(`/api/vocabulary?category=${encodeURIComponent(category)}`);
+            vocab = await response.json();
+            
+            const allRes = await fetch('/api/vocabulary');
+            allVocabPool = await allRes.json();
+            
+            if (vocab.length === 0) {
+                showAlert("Info", "Materi untuk kategori ini belum tersedia.", () => {
+                    window.location.href = "/";
+                });
+                return;
+            }
+            
+            // Take 4 random words for this session
+            const selectedVocab = vocab.sort(() => Math.random() - 0.5).slice(0, 4);
+            
+            selectedVocab.forEach(item => {
+                steps.push({ type: 'intro', data: item });
+                steps.push({ type: 'listening', data: item, options: generateOptions(item) });
+                
+                if (Math.random() > 0.5) {
+                    steps.push({ type: 'choice', data: item, options: generateOptions(item) });
+                } else {
+                    steps.push({ type: 'typing', data: item });
+                }
+                
+                steps.push({ type: 'typing_ko', data: item });
+                steps.push({ type: 'speaking', data: item });
+            });
         }
+
+        // Shuffle practice steps
+        const introSteps = steps.filter(s => s.type.startsWith('intro'));
+        const practiceSteps = steps.filter(s => !s.type.startsWith('intro')).sort(() => Math.random() - 0.5);
+        steps = [...introSteps, ...practiceSteps];
         
-        vocab.slice(0, 5).forEach(item => {
-            steps.push({ type: 'intro', data: item });
-            steps.push({ type: 'listening', data: item, options: generateOptions(item) });
-            steps.push({ type: 'choice', data: item, options: generateOptions(item) });
-            steps.push({ type: 'typing', data: item });
-            steps.push({ type: 'typing_ko', data: item });
-            steps.push({ type: 'speaking', data: item });
-        });
-        
+        updateHearts();
         renderStep();
     } catch (e) {
         console.error("Session Init Error:", e);
     }
+}
+
+function generateHangulOptions(correct, all) {
+    let opts = [correct];
+    while (opts.length < 4) {
+        let rand = all[Math.floor(Math.random() * all.length)];
+        if (!opts.find(o => o.char === rand.char)) opts.push(rand);
+    }
+    return opts.sort(() => Math.random() - 0.5);
+}
+
+function generateSoundOptions(correct, all) {
+    let opts = [correct];
+    while (opts.length < 4) {
+        let rand = all[Math.floor(Math.random() * all.length)];
+        if (!opts.find(o => o.romanization === rand.romanization)) opts.push(rand);
+    }
+    return opts.sort(() => Math.random() - 0.5);
+}
+
+function combine(c, v) {
+    const initials = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    const medials = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+    
+    const iIdx = initials.indexOf(c);
+    const mIdx = medials.indexOf(v);
+    
+    if (iIdx !== -1 && mIdx !== -1) {
+        // Hangul Syllable Code Point = ((initial * 21) + medial) * 28 + final + 0xAC00
+        // For basic CV, final is 0
+        const charCode = ((iIdx * 21) + mIdx) * 28 + 0xAC00;
+        return String.fromCharCode(charCode);
+    }
+    return c + v;
 }
 
 function generateOptions(correctItem) {
@@ -378,11 +547,11 @@ function renderStep() {
     container.innerHTML = '';
     container.className = 'active-card animate-fade';
     
-    if (step.type === 'intro') {
+    if (step.type === 'intro' || step.type === 'intro_char') {
         speak(step.data.korean);
         container.innerHTML = `
             <div class="intro-card">
-                <p class="question-title">Kata Baru!</p>
+                <p class="question-title">${step.type === 'intro_char' ? 'Huruf Baru!' : 'Kata Baru!'}</p>
                 <div class="hint-wrapper">
                     <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')">${step.data.korean}</h1>
                     <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
@@ -395,22 +564,61 @@ function renderStep() {
                 </p>
             </div>
         `;
-    } else if (step.type === 'choice') {
+    } else if (step.type === 'choice' || step.type === 'choice_char') {
         container.innerHTML = `
-            <p class="question-title">Pilih arti yang benar:</p>
-            <div class="hint-wrapper">
-                <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')" style="font-size: 3rem;">${step.data.korean}</h1>
-                <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
-            </div>
+            <p class="question-title">${step.question || 'Pilih arti yang benar:'}</p>
+            ${step.type === 'choice_char' ? '' : `
+                <div class="hint-wrapper">
+                    <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')" style="font-size: 3rem;">${step.data.korean}</h1>
+                    <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
+                </div>
+            `}
             <div class="options-stack">
                 ${step.options.map(opt => `
-                    <button class="option-btn" onclick="selectOption('${opt.id}', this)">
-                        ${opt.meaning}
+                    <button class="option-btn" onclick="selectOption('${step.type === 'choice_char' ? opt.char : opt.id}', this)">
+                        ${step.type === 'choice_char' ? opt.char : opt.meaning}
                     </button>
                 `).join('')}
             </div>
         `;
-    } else if (step.type === 'listening') {
+    } else if (step.type === 'choice_sound') {
+        container.innerHTML = `
+            <p class="question-title">${step.question}</p>
+            <h1 class="intro-word" style="font-size: 4rem; margin-bottom: 20px;">${step.data.char}</h1>
+            <div class="options-stack">
+                ${step.options.map(opt => `
+                    <button class="option-btn" onclick="selectOption('${opt.romanization}', this)">
+                        ${opt.romanization}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    } else if (step.type === 'assemble_hangul') {
+        currentWritten = new Array(step.data.parts.length).fill(null);
+        // Determine layout based on vowel
+        const vowel = step.data.parts[1];
+        const isHorizontal = ['ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ'].includes(vowel);
+        
+        container.innerHTML = `
+            <p class="question-title">Susun bunyi "${step.data.roman}":</p>
+            <div class="assembly-wrapper">
+                <div class="hangul-block-frame ${isHorizontal ? 'vertical-stack' : 'horizontal-stack'}">
+                    ${step.data.parts.map((_, i) => `
+                        <div class="slot" id="slot-${i}" onclick="removeCharFromAssembly(${i})">?</div>
+                    `).join('')}
+                </div>
+                <div class="assembly-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="assembly-final" id="assembly-result">?</div>
+            </div>
+            
+            <div class="character-bank" style="margin-top: 40px;">
+                ${step.data.parts.sort(() => Math.random() - 0.5).map(char => `
+                    <button class="char-bubble" onclick="addCharToAssembly('${char}', this)">${char}</button>
+                `).join('')}
+            </div>
+        `;
+    }
+ else if (step.type === 'listening') {
         speak(step.data.korean);
         container.innerHTML = `
             <p class="question-title">Dengar dan pilih arti yang benar:</p>
@@ -459,7 +667,6 @@ function renderStep() {
                 <i class="fas fa-volume-up"></i>
                 <h1 class="intro-word">${step.data.korean}</h1>
             </div>
-            <p class="intro-roman" style="text-align:center; margin-top:-10px;">${step.data.romanization}</p>
             
             <div class="mic-container">
                 <button id="mic-btn" class="mic-btn" onclick="startListening()">
@@ -584,13 +791,70 @@ function startListening() {
     };
 }
 
+function updateHearts() {
+    const heartEl = document.querySelector('.hearts');
+    heartEl.innerHTML = `<i class="fas fa-heart"></i> ${hearts}`;
+    if (hearts <= 2) heartEl.style.color = 'var(--danger)';
+}
+
+function addCharToAssembly(char, btn) {
+    if (isAnswered) return;
+    
+    // Find first empty slot
+    const idx = currentWritten.indexOf(null);
+    
+    if (idx !== -1) {
+        currentWritten[idx] = char;
+        btn.classList.add('used');
+        btn.dataset.slotRef = idx; // Mark which slot this button filled
+        
+        const slot = document.getElementById(`slot-${idx}`);
+        if (slot) {
+            slot.textContent = char;
+            slot.classList.add('filled');
+        }
+        
+        // If all slots filled, show result
+        if (currentWritten.every(val => val !== null)) {
+            const result = combine(currentWritten[0], currentWritten[1]);
+            document.getElementById('assembly-result').textContent = result;
+            speak(result);
+        }
+    }
+}
+
+function removeCharFromAssembly(idx) {
+    if (isAnswered) return;
+    const char = currentWritten[idx];
+    if (!char) return;
+
+    // Clear slot
+    const slot = document.getElementById(`slot-${idx}`);
+    slot.textContent = "?";
+    slot.classList.remove('filled');
+    currentWritten[idx] = null;
+
+    // Restore button in bank
+    const buttons = document.querySelectorAll('.char-bubble.used');
+    for (let b of buttons) {
+        if (b.textContent === char && b.dataset.slotRef == idx) {
+            b.classList.remove('used');
+            delete b.dataset.slotRef;
+            break;
+        }
+    }
+
+    // Clear result
+    document.getElementById('assembly-result').textContent = "?";
+}
+
 function handleAction(forceCorrect = false) {
     const step = steps[currentStepIdx];
     const footer = document.getElementById('session-footer');
     const btn = document.getElementById('main-action-btn');
     const feedback = document.querySelector('.feedback-info');
     
-    if (step.type === 'intro') {
+    if (step.type === 'intro' || step.type === 'intro_char') {
         currentStepIdx++;
         if (currentStepIdx < steps.length) renderStep();
         else finishSession();
@@ -608,8 +872,17 @@ function handleAction(forceCorrect = false) {
             } else if (step.type === 'typing_ko') {
                 const input = currentWritten.join('');
                 isCorrect = input === step.data.korean;
+            } else if (step.type === 'assemble_hangul') {
+                const inputResult = combine(currentWritten[0], currentWritten[1]);
+                isCorrect = inputResult === step.data.result;
             } else if (step.type === 'speaking') {
-                return; // Wait for voice result or manual check (skip)
+                return; // Wait for voice result
+            } else if (step.type === 'choice_char') {
+                if (!selectedCardId) return;
+                isCorrect = selectedCardId === step.data.char;
+            } else if (step.type === 'choice_sound') {
+                if (!selectedCardId) return;
+                isCorrect = selectedCardId === step.data.romanization;
             } else {
                 if (!selectedCardId) return;
                 isCorrect = selectedCardId == step.data.id;
@@ -619,9 +892,28 @@ function handleAction(forceCorrect = false) {
         isAnswered = true;
         footer.className = `session-footer ${isCorrect ? 'correct' : 'wrong'}`;
         feedback.style.display = 'flex';
-        document.getElementById('status-title').textContent = isCorrect ? 'Bagus!' : 'Salah';
-        document.getElementById('status-msg').textContent = isCorrect ? 'Jawaban Anda benar.' : `Harusnya: ${step.data.korean}`;
+        document.getElementById('status-title').textContent = isCorrect ? 'Bagus!' : 'Kurang Tepat';
+        
+        let correctVal = step.data.korean || step.data.char || step.data.result;
+        let meaningVal = step.data.meaning || step.data.romanization || step.data.roman;
+        document.getElementById('status-msg').textContent = isCorrect ? 'Jawaban Anda benar.' : `Harusnya: ${correctVal} (${meaningVal})`;
+        
         document.getElementById('status-icon').className = isCorrect ? 'fas fa-check' : 'fas fa-times';
+        
+        if (!isCorrect) {
+            hearts--;
+            updateHearts();
+            // Push failed step to end
+            steps.push(JSON.parse(JSON.stringify(step)));
+            
+            if (hearts <= 0) {
+                showAlert('Gagal', 'Anda kehabisan nyawa! Coba lagi nanti.', () => {
+                    window.location.href = "{{ url_for('views.dashboard') }}";
+                });
+                return;
+            }
+        }
+        
         btn.textContent = 'Lanjut';
     } else {
         currentStepIdx++;
@@ -631,8 +923,17 @@ function handleAction(forceCorrect = false) {
 }
 
 async function finishSession() {
-    await addXP(15);
-    window.location.href = "{{ url_for('views.dashboard') }}";
+    await addXP(20);
+    // Mark as completed
+    await fetch('/api/complete_category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category })
+    });
+    
+    showAlert('Selamat!', 'Sesi selesai! Anda mendapatkan 20 XP.', () => {
+        window.location.href = "{{ url_for('views.dashboard') }}";
+    });
 }
 
 initSession();

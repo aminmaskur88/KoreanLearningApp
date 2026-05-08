@@ -4,223 +4,349 @@
 <div class="animate-fade">
     <div class="lesson-header">
         <a href="{{ url_for('views.dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Kembali</a>
-        <h2>Level 1: Perkenalan & Cara Baca</h2>
+        <h2>Level 1: Mengenal Huruf Hangul</h2>
     </div>
 
+    <!-- Section 1: Konsonan Dasar -->
     <div class="card lesson-section">
-        <h3>1. Struktur Suku Kata</h3>
-        <p>Bahasa Korea ditulis dalam blok suku kata. Setiap blok terdiri dari minimal satu konsonan dan satu vokal.</p>
-        <div class="syllable-demo">
-            <div class="block">
-                <span class="char">한</span>
-                <span class="desc">H + A + N</span>
+        <div class="section-title-wrap">
+            <i class="fas fa-font"></i>
+            <h3>1. Konsonan Dasar (Ja-eum)</h3>
+        </div>
+        <p>Ketik pada huruf untuk mendengarkan bunyinya:</p>
+        <div class="char-grid">
+            <div class="char-card" onclick="speak('ㄱ')">
+                <span class="ko">ㄱ</span>
+                <span class="ro">g / k</span>
             </div>
-            <div class="block">
-                <span class="char">국</span>
-                <span class="desc">G + U + K</span>
+            <div class="char-card" onclick="speak('ㄴ')">
+                <span class="ko">ㄴ</span>
+                <span class="ro">n</span>
+            </div>
+            <div class="char-card" onclick="speak('ㄷ')">
+                <span class="ko">ㄷ</span>
+                <span class="ro">d / t</span>
+            </div>
+            <div class="char-card" onclick="speak('ㄹ')">
+                <span class="ko">ㄹ</span>
+                <span class="ro">r / l</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅁ')">
+                <span class="ko">ㅁ</span>
+                <span class="ro">m</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅂ')">
+                <span class="ko">ㅂ</span>
+                <span class="ro">b / p</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅅ')">
+                <span class="ko">ㅅ</span>
+                <span class="ro">s</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅇ')">
+                <span class="ko">ㅇ</span>
+                <span class="ro">ng / -</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅈ')">
+                <span class="ko">ㅈ</span>
+                <span class="ro">j</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅊ')">
+                <span class="ko">ㅊ</span>
+                <span class="ro">ch</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅋ')">
+                <span class="ko">ㅋ</span>
+                <span class="ro">k'</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅌ')">
+                <span class="ko">ㅌ</span>
+                <span class="ro">t'</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅍ')">
+                <span class="ko">ㅍ</span>
+                <span class="ro">p'</span>
+            </div>
+            <div class="char-card" onclick="speak('ㅎ')">
+                <span class="ko">ㅎ</span>
+                <span class="ro">h</span>
             </div>
         </div>
-        <p class="tip"><strong>Tips:</strong> Baca dari kiri ke kanan, atas ke bawah.</p>
     </div>
 
+    <!-- Section 2: Vokal Dasar -->
     <div class="card lesson-section">
-        <h3>2. Kata Perkenalan Dasar (Analisis Mendalam)</h3>
-        <p>Mari kita bedah kata-kata ini per karakter agar Anda paham cara bacanya.</p>
+        <div class="section-title-wrap">
+            <i class="fas fa-adjust"></i>
+            <h3>2. Vokal Dasar (Mo-eum)</h3>
+        </div>
+        <p>Vokal tidak bisa berdiri sendiri, harus dipasangkan dengan <b>ㅇ</b> jika di awal suku kata:</p>
+        <div class="char-grid v-grid">
+            <div class="char-card v-card" onclick="speak('아')">
+                <span class="ko">아</span>
+                <span class="ro">a</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('야')">
+                <span class="ko">야</span>
+                <span class="ro">ya</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('어')">
+                <span class="ko">어</span>
+                <span class="ro">eo</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('여')">
+                <span class="ko">여</span>
+                <span class="ro">yeo</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('오')">
+                <span class="ko">오</span>
+                <span class="ro">o</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('요')">
+                <span class="ko">요</span>
+                <span class="ro">yo</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('우')">
+                <span class="ko">우</span>
+                <span class="ro">u</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('유')">
+                <span class="ko">유</span>
+                <span class="ro">yu</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('으')">
+                <span class="ko">으</span>
+                <span class="ro">eu</span>
+            </div>
+            <div class="char-card v-card" onclick="speak('이')">
+                <span class="ko">이</span>
+                <span class="ro">i</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Aturan Menulis & Latihan -->
+    <div class="card lesson-section rules-card">
+        <h3><i class="fas fa-pen-nib"></i> Aturan & Latihan Menulis</h3>
+        <div class="rule-box">
+            <div class="rule-item">
+                <i class="fas fa-arrow-right"></i>
+                <span>Kiri ke Kanan</span>
+            </div>
+            <div class="rule-item">
+                <i class="fas fa-arrow-down"></i>
+                <span>Atas ke Bawah</span>
+            </div>
+        </div>
+        <p class="tip">Ketuk huruf di bawah untuk melihat urutan goresan (Stroke Order):</p>
         
+        <div class="writing-practice-container">
+            <div id="writing-display" class="writing-canvas-area">
+                <h1 id="active-stroke-char">ㄱ</h1>
+                <div class="stroke-hint">Goresan 1: Kiri ke Kanan & Bawah</div>
+            </div>
+            <div class="writing-selector">
+                <button class="btn-sm" onclick="showStroke('ㄱ', '1: Kanan, lalu Bawah (Satu goresan)')">ㄱ</button>
+                <button class="btn-sm" onclick="showStroke('ㄴ', '1: Bawah, lalu Kanan (Satu goresan)')">ㄴ</button>
+                <button class="btn-sm" onclick="showStroke('ㄷ', '1: Kanan, 2: Bawah & Kanan')">ㄷ</button>
+                <button class="btn-sm" onclick="showStroke('ㄹ', '1: Kanan & Bawah, 2: Kanan, 3: Bawah & Kanan')">ㄹ</button>
+                <button class="btn-sm" onclick="showStroke('ㅇ', '1: Lingkaran berlawanan arah jarum jam')">ㅇ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Menyusun Suku Kata -->
+    <div class="card lesson-section">
+        <h3>3. Cara Menyusun Suku Kata</h3>
+        <div class="syllable-builder">
+            <div class="builder-row">
+                <span class="b-char">ㄱ</span>
+                <span class="b-plus">+</span>
+                <span class="b-char">ㅏ</span>
+                <span class="b-eq">=</span>
+                <span class="b-result" onclick="speak('가')">가</span>
+            </div>
+            <div class="builder-row">
+                <span class="b-char">ㄴ</span>
+                <span class="b-plus">+</span>
+                <span class="b-char">ㅓ</span>
+                <span class="b-eq">=</span>
+                <span class="b-result" onclick="speak('너')">너</span>
+            </div>
+            <div class="builder-row">
+                <span class="b-char">ㅁ</span>
+                <span class="b-plus">+</span>
+                <span class="b-char">ㅜ</span>
+                <span class="b-eq">=</span>
+                <span class="b-result" onclick="speak('무')">무</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Contoh Kata Praktis -->
+    <div class="card lesson-section">
+        <h3>4. Praktik Membaca</h3>
         <div class="word-intro" onclick="speak('안녕하세요')">
             <div class="word-main">
                 <h1 class="ko">안녕하세요</h1>
-                <p class="ro">An-nyeong-ha-se-yo</p>
+                <p class="ro">Halo / Selamat Siang</p>
             </div>
-            
             <div class="breakdown-container">
-                <div class="breakdown-item">
-                    <span class="part">안</span>
-                    <span class="math">ㅇ+ㅏ+ㄴ</span>
-                    <span class="phonetic">a+n</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">녕</span>
-                    <span class="math">ㄴ+ㅕ+ㅇ</span>
-                    <span class="phonetic">ny+eo+ng</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">하</span>
-                    <span class="math">ㅎ+ㅏ</span>
-                    <span class="phonetic">h+a</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">세</span>
-                    <span class="math">ㅅ+ㅔ</span>
-                    <span class="phonetic">s+e</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">요</span>
-                    <span class="math">ㅇ+ㅛ</span>
-                    <span class="phonetic">y+o</span>
-                </div>
+                <div class="breakdown-item"><span class="part">안</span><span class="phonetic">an</span></div>
+                <div class="breakdown-item"><span class="part">녕</span><span class="phonetic">nyeong</span></div>
+                <div class="breakdown-item"><span class="part">하</span><span class="phonetic">ha</span></div>
+                <div class="breakdown-item"><span class="part">세</span><span class="phonetic">se</span></div>
+                <div class="breakdown-item"><span class="part">요</span><span class="phonetic">yo</span></div>
             </div>
-            <i class="fas fa-volume-up speak-icon"></i>
         </div>
-
-        <div class="word-intro" onclick="speak('감사합니다')">
+        
+        <div class="word-intro" onclick="speak('한글')">
             <div class="word-main">
-                <h1 class="ko">감사합니다</h1>
-                <p class="ro">Gam-sa-ham-ni-da</p>
+                <h1 class="ko">한글</h1>
+                <p class="ro">Han-gul (Alfabet Korea)</p>
             </div>
             <div class="breakdown-container">
-                <div class="breakdown-item">
-                    <span class="part">감</span>
-                    <span class="math">ㄱ+ㅏ+ㅁ</span>
-                    <span class="phonetic">g+a+m</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">사</span>
-                    <span class="math">ㅅ+ㅏ</span>
-                    <span class="phonetic">s+a</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">합</span>
-                    <span class="math">ㅎ+ㅏ+ㅂ</span>
-                    <span class="phonetic">ha+m*</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">니</span>
-                    <span class="math">ㄴ+ㅣ</span>
-                    <span class="phonetic">n+i</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="part">다</span>
-                    <span class="math">ㄷ+ㅏ</span>
-                    <span class="phonetic">d+a</span>
-                </div>
-            </div>
-            <p class="tip" style="margin-top:10px; font-size: 0.75rem;">*Catatan: 'ㅂ' di kata '합' dibaca 'm' karena bertemu 'ㄴ'. Ini adalah aturan perubahan bunyi.</p>
-            <i class="fas fa-volume-up speak-icon"></i>
-        </div>
-    </div>
-
-    <div class="card lesson-section">
-        <h3>3. Latihan Membaca Cepat</h3>
-        <p>Coba ucapkan kata-kata pendek ini:</p>
-        <div class="grid-2">
-            <div class="mini-word" onclick="speak('나')">
-                <span class="ko">나</span>
-                <span class="ro">Na (Saya)</span>
-            </div>
-            <div class="mini-word" onclick="speak('너')">
-                <span class="ko">너</span>
-                <span class="ro">Neo (Kamu)</span>
-            </div>
-            <div class="mini-word" onclick="speak('물')">
-                <span class="ko">물</span>
-                <span class="ro">Mul (Air)</span>
-            </div>
-            <div class="mini-word" onclick="speak('집')">
-                <span class="ko">집</span>
-                <span class="ro">Jip (Rumah)</span>
+                <div class="breakdown-item"><span class="part">한</span><span class="phonetic">Han</span></div>
+                <div class="breakdown-item"><span class="part">글</span><span class="phonetic">gul</span></div>
             </div>
         </div>
     </div>
 
     <div class="lesson-footer">
-        <button class="btn btn-primary" onclick="completeIntro()">Selesai & Ambil XP</button>
+        <button class="btn btn-primary" onclick="completeIntro()">Selesai & Lanjut</button>
     </div>
 </div>
 
 <style>
-.lesson-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-.back-link { text-decoration: none; color: var(--text-muted); font-size: 0.9rem; }
+.lesson-header { margin-bottom: 25px; }
+.back-link { text-decoration: none; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; display: block; }
+.lesson-header h2 { font-weight: 800; color: var(--text); }
 
-.lesson-section { margin-bottom: 20px; }
-.lesson-section h3 { color: var(--secondary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-.lesson-section p { font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
+.lesson-section { margin-bottom: 25px; padding: 20px; }
+.section-title-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: var(--secondary); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+.lesson-section h3 { margin: 0; font-weight: 800; font-size: 1.2rem; }
 
-.syllable-demo { display: flex; gap: 20px; justify-content: center; margin: 20px 0; }
-.block { display: flex; flex-direction: column; align-items: center; background: var(--border); padding: 15px; border-radius: 10px; width: 80px; }
-.block .char { font-size: 2rem; font-weight: bold; color: var(--primary); }
-.block .desc { font-size: 0.7rem; margin-top: 5px; font-weight: bold; }
+.char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; margin-top: 15px; }
+.char-card {
+    background: var(--background);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 0 var(--border);
+}
+.char-card:active { transform: translateY(2px); box-shadow: 0 2px 0 0 var(--border); background: var(--secondary); color: white; border-color: var(--secondary-dark); }
+.char-card .ko { font-size: 1.8rem; font-weight: 900; display: block; }
+.char-card .ro { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
+.char-card:active .ro { color: rgba(255,255,255,0.8); }
+
+.v-grid { grid-template-columns: repeat(5, 1fr); }
+.v-card { background: #f0f9ff; border-color: #bae6fd; box-shadow: 0 4px 0 0 #bae6fd; }
+body.dark-mode .v-card { background: #1e293b; border-color: #334155; box-shadow: 0 4px 0 0 #0f172a; }
+
+.rules-card { background: #fefce8; border-color: #fef08a; }
+body.dark-mode .rules-card { background: #1e1b4b; border-color: #312e81; }
+.rules-card h3 { color: #854d0e; }
+body.dark-mode .rules-card h3 { color: #eab308; }
+.rule-box { display: flex; justify-content: space-around; margin: 15px 0; }
+.rule-item { display: flex; flex-direction: column; align-items: center; font-weight: 800; color: #854d0e; }
+body.dark-mode .rule-item { color: #eab308; }
+.rule-item i { font-size: 1.5rem; margin-bottom: 5px; }
+
+.syllable-builder { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+.builder-row { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 1.5rem; font-weight: 900; }
+.b-char { color: var(--secondary); }
+.b-plus, .b-eq { color: var(--text-muted); }
+.b-result { 
+    background: var(--primary); 
+    color: white; 
+    padding: 10px 20px; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    box-shadow: 0 4px 0 0 var(--primary-dark);
+}
+.b-result:active { transform: translateY(2px); box-shadow: none; }
+
+/* Writing Practice Styles */
+.writing-practice-container { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+.writing-canvas-area {
+    background: white;
+    border: 2px dashed var(--secondary);
+    border-radius: 20px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+body.dark-mode .writing-canvas-area { background: #0f172a; }
+#active-stroke-char { font-size: 5rem; color: var(--secondary); margin: 0; font-family: 'serif'; }
+.stroke-hint { font-size: 0.8rem; font-weight: bold; color: var(--text-muted); background: var(--card-bg); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); }
+
+.writing-selector { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-sm { 
+    background: var(--card-bg); 
+    border: 2px solid var(--border); 
+    border-radius: 12px; 
+    padding: 8px 15px; 
+    font-size: 1.2rem; 
+    font-weight: 900; 
+    cursor: pointer; 
+    box-shadow: 0 3px 0 0 var(--border);
+}
+.btn-sm:active { transform: translateY(2px); box-shadow: none; }
 
 .word-intro { 
     background: var(--background); 
     border: 2px solid var(--primary); 
-    border-radius: 12px; 
+    border-radius: 20px; 
     padding: 20px; 
-    margin-bottom: 15px; 
-    position: relative;
+    margin-bottom: 20px; 
     cursor: pointer;
+    box-shadow: 0 6px 0 0 var(--primary-dark);
 }
-.word-intro:active { transform: scale(0.98); }
 .word-main { text-align: center; margin-bottom: 15px; }
-.word-main .ko { font-size: 2.5rem; color: var(--primary); }
-.word-main .ro { font-size: 1rem; color: var(--text-muted); font-style: italic; }
+.word-main .ko { font-size: 2.8rem; color: var(--primary); margin: 0; }
+.word-main .ro { font-size: 1rem; color: var(--text-muted); font-weight: bold; }
 
-.breakdown-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 15px;
-    border-top: 1px dashed var(--border);
-    padding-top: 15px;
-}
-
+.breakdown-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .breakdown-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px;
-    min-width: 60px;
-}
-
-.breakdown-item .part {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--primary);
-}
-
-.breakdown-item .math {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-}
-
-.breakdown-item .phonetic {
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.word-desc { font-size: 0.9rem; }
-.word-desc .note { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
-.speak-icon { position: absolute; top: 15px; right: 15px; color: var(--primary); font-size: 1.2rem; }
-
-.mini-word {
-    background: var(--background);
-    border: 1px solid var(--border);
-    padding: 10px;
     border-radius: 10px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    cursor: pointer;
 }
-.mini-word .ko { font-size: 1.5rem; font-weight: bold; }
-.mini-word .ro { font-size: 0.8rem; color: var(--text-muted); }
+.breakdown-item .part { font-size: 1.2rem; font-weight: 900; color: var(--secondary); }
+.breakdown-item .phonetic { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); }
 
-.tip { background: #fff9db; padding: 10px; border-radius: 8px; color: #856404; font-size: 0.85rem; }
-body.dark-mode .tip { background: #2d2a1a; color: #ffe066; }
-
-.lesson-footer { margin-top: 30px; padding-bottom: 20px; }
+.lesson-footer { padding: 20px 0 40px 0; }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
+function showStroke(char, hint) {
+    document.getElementById('active-stroke-char').textContent = char;
+    document.querySelector('.stroke-hint').textContent = hint;
+    speak(char);
+}
+
 async function completeIntro() {
-    await addXP(20);
-    showAlert("Bagus!", "Anda menyelesaikan pelajaran pertama. +20 XP", () => {
+    await addXP(30);
+    // Mark as completed
+    await fetch('/api/complete_category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: 'hangul_intro' })
+    });
+    
+    showAlert("Luar Biasa!", "Anda telah menguasai dasar-dasar Hangul! +30 XP", () => {
         window.location.href = "{{ url_for('views.dashboard') }}";
     });
 }

@@ -95,15 +95,20 @@ async function navigateTo(url, push = true) {
         // Update URL
         if (push) history.pushState({}, '', url);
         
-        // Extract and run scripts (crucial for page-specific logic)
-        // We look for scripts in the whole body of the new document
+        // Extract and run scripts
+        // Important: We wrap scripts in a block or IIFE to avoid redeclaration errors
         const scripts = newDoc.body.querySelectorAll('script');
         scripts.forEach(oldScript => {
-            if (oldScript.src && oldScript.src.includes('main.js')) return; // Don't re-run main.js
+            if (oldScript.src && oldScript.src.includes('main.js')) return;
             
             const newScript = document.createElement('script');
             Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            
+            // Run inline scripts in global scope
+            if (!oldScript.src) {
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            }
+            
             document.body.appendChild(newScript);
             newScript.parentNode.removeChild(newScript);
         });
@@ -111,23 +116,21 @@ async function navigateTo(url, push = true) {
         // Update active nav state
         document.querySelectorAll('.nav-item').forEach(item => {
             const href = item.getAttribute('href');
-            if (window.location.pathname === href) {
+            const currentPath = window.location.pathname;
+            if (currentPath === href) {
                 item.classList.add('active');
             } else {
                 item.classList.remove('active');
             }
         });
         
-        // Refresh stats
         fetchUserStats();
-        
-        // Close modal and ensure scroll to top
         document.getElementById('custom-modal').style.display = 'none';
         window.scrollTo(0, 0);
 
     } catch (err) {
         console.error('Navigation failed:', err);
-        window.location.href = url; // Fallback to normal load
+        window.location.href = url;
     }
 }
 
@@ -184,6 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // SPA Link Interception
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a');
+        if (link && link.classList.contains('locked')) return; // Ignore locked links
+        
         if (link && link.href && link.href.startsWith(window.location.origin)) {
             // Check if it's a normal link (not target="_blank", etc.)
             if (!link.getAttribute('target') || link.getAttribute('target') === '_self') {

@@ -105,8 +105,12 @@
     margin: 0 auto;
 }
 .feedback-bar.show { bottom: 0; }
-.feedback-bar.correct { background: #d7ffb8; border-top-color: #58cc02; }
-.feedback-bar.wrong { background: #ffdfe0; border-top-color: #ff4b4b; }
+.feedback-bar.correct { background: #d7ffb8; border-top-color: #58cc02; color: #46a302; }
+.feedback-bar.wrong { background: #ffdfe0; border-top-color: #ff4b4b; color: #ea2b2b; }
+
+.feedback-bar.correct h4, .feedback-bar.correct p,
+.feedback-bar.wrong h4, .feedback-bar.wrong p { color: inherit !important; }
+.feedback-bar.correct p, .feedback-bar.wrong p { opacity: 0.9; }
 
 .feedback-content { display: flex; align-items: center; gap: 15px; }
 .feedback-content i { font-size: 2rem; }
@@ -122,11 +126,11 @@
 
 {% block scripts %}
 <script>
-let allVocab = [];
-let quizItems = [];
-let currentIdx = 0;
-let score = 0;
-let isAnswered = false;
+var allVocab = [];
+var quizItems = [];
+var currentIdx = 0;
+var score = 0;
+var isAnswered = false;
 
 async function startQuiz() {
     const response = await fetch('/api/vocabulary');
@@ -144,16 +148,24 @@ async function startQuiz() {
 function showQuestion() {
     isAnswered = false;
     const item = quizItems[currentIdx];
+    if (!item) {
+        finishQuiz();
+        return;
+    }
+    
     const type = Math.random() > 0.5 ? 'ko_to_id' : 'id_to_ko';
     
     document.getElementById('question-target').textContent = type === 'ko_to_id' ? item.korean : item.meaning;
     document.getElementById('question-text').textContent = type === 'ko_to_id' ? "Apa arti dari:" : "Apa bahasa Koreanya:";
     
-    // Generate options
+    // Generate options safely
     let options = [item];
-    while (options.length < 4) {
+    let attempts = 0;
+    while (options.length < 4 && attempts < 50) {
+        attempts++;
         let rand = allVocab[Math.floor(Math.random() * allVocab.length)];
-        if (!options.find(o => o.id === rand.id)) options.push(rand);
+        // Use korean word as unique identifier if id is missing
+        if (!options.find(o => o.korean === rand.korean)) options.push(rand);
     }
     options = options.sort(() => Math.random() - 0.5);
     
@@ -162,20 +174,21 @@ function showQuestion() {
     options.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option-btn animate-fade';
+        btn.dataset.korean = opt.korean;
         btn.textContent = type === 'ko_to_id' ? opt.meaning : opt.korean;
-        btn.onclick = () => checkAnswer(opt.id, item.id, btn);
+        btn.onclick = () => checkAnswer(opt.korean, item.korean, btn);
         grid.appendChild(btn);
     });
     
     document.getElementById('feedback-bar').className = 'feedback-bar';
-    document.getElementById('quiz-progress-fill').style.width = `${(currentIdx / 10) * 100}%`;
+    document.getElementById('quiz-progress-fill').style.width = `${(currentIdx / quizItems.length) * 100}%`;
 }
 
-function checkAnswer(selectedId, correctId, btn) {
+function checkAnswer(selectedKoreaan, correctKorean, btn) {
     if (isAnswered) return;
     isAnswered = true;
     
-    const isCorrect = selectedId === correctId;
+    const isCorrect = selectedKoreaan === correctKorean;
     const feedbackBar = document.getElementById('feedback-bar');
     const status = document.getElementById('feedback-status');
     const msg = document.getElementById('feedback-message');
@@ -197,9 +210,14 @@ function checkAnswer(selectedId, correctId, btn) {
         msg.textContent = `Jawaban benar: ${correctItem.korean} = ${correctItem.meaning}`;
         icon.className = 'fas fa-times-circle';
         
+        // Push failed item to the end to be asked again
+        quizItems.push(JSON.parse(JSON.stringify(correctItem)));
+        
         // Highlight correct option
         document.querySelectorAll('.option-btn').forEach(b => {
-            // This is a bit simplified, but works for the prototype
+            if (b.dataset.korean === correctKorean) {
+                b.classList.add('correct');
+            }
         });
     }
     
@@ -208,7 +226,7 @@ function checkAnswer(selectedId, correctId, btn) {
 
 function nextQuestion() {
     currentIdx++;
-    if (currentIdx < 10) {
+    if (currentIdx < quizItems.length) {
         showQuestion();
     } else {
         finishQuiz();
@@ -218,6 +236,13 @@ function nextQuestion() {
 async function finishQuiz() {
     const xpEarned = score * 10;
     await addXP(xpEarned);
+    
+    // Mark as completed
+    await fetch('/api/complete_category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: 'unit1_quiz' })
+    });
     
     document.getElementById('quiz-container').style.display = 'none';
     document.getElementById('quiz-result').style.display = 'block';
