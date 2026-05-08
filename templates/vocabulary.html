@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade">
+    <div class="section-header">
+        <h2>Daftar Kosakata</h2>
+        <p>Pelajari 100+ kosakata dasar Korea</p>
+    </div>
+
+    <div class="filter-container card">
+        <label for="category-select">Kategori:</label>
+        <select id="category-select" onchange="loadVocab()">
+            <option value="">Semua</option>
+            <!-- Categories will be loaded here -->
+        </select>
+    </div>
+
+    <div id="vocab-list">
+        <!-- Vocab items will be loaded here -->
+    </div>
+</div>
+
+<style>
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+}
+select {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+.vocab-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+}
+
+.vocab-info h3 {
+    color: var(--primary);
+    font-size: 1.4rem;
+    margin-bottom: 2px;
+}
+
+.vocab-info .roman {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+.vocab-info .meaning {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.vocab-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-icon {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-icon:active {
+    background: var(--border);
+}
+
+.btn-icon i { font-size: 1.2rem; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadCategories() {
+    const response = await fetch('/api/categories');
+    const categories = await response.json();
+    const select = document.getElementById('category-select');
+    categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
+
+async function loadVocab() {
+    const cat = document.getElementById('category-select').value;
+    let url = '/api/vocabulary';
+    if (cat) url += `?category=${encodeURIComponent(cat)}`;
+    
+    const response = await fetch(url);
+    const vocab = await response.json();
+    renderVocab(vocab);
+}
+
+function renderVocab(vocab) {
+    const list = document.getElementById('vocab-list');
+    list.innerHTML = '';
+    
+    vocab.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'card vocab-card animate-fade';
+        card.innerHTML = `
+            <div class="vocab-info">
+                <h3>${v.korean}</h3>
+                <p class="roman">${v.romanization}</p>
+                <p class="meaning">${v.meaning}</p>
+            </div>
+            <div class="vocab-actions">
+                <button class="btn-icon" onclick="speak('${v.korean}')">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+loadCategories();
+loadVocab();
+</script>
+{% endblock %}

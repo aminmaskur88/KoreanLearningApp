@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade">
+    <div class="section-header">
+        <h2>Flashcards</h2>
+        <p>Balik kartu untuk melihat arti</p>
+    </div>
+
+    <div class="flashcard-container">
+        <div id="flashcard" class="flashcard">
+            <div class="flashcard-front card">
+                <h1 id="card-korean">안녕하세요</h1>
+                <p id="card-roman" class="text-muted">Annyeonghaseyo</p>
+                <button class="btn-icon speak-btn" onclick="event.stopPropagation(); speakCurrent();">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+            <div class="flashcard-back card">
+                <h2 id="card-meaning">Halo / Selamat siang</h2>
+                <hr>
+                <p id="card-example" class="example-text">안녕하세요, 만나서 반갑습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="prevCard()">Kembali</button>
+        <button class="btn btn-primary" onclick="nextCard()">Lanjut</button>
+    </div>
+
+    <div class="progress-info">
+        Kartu <span id="current-index">1</span> dari <span id="total-count">0</span>
+    </div>
+</div>
+
+<style>
+.flashcard-container {
+    perspective: 1000px;
+    height: 300px;
+    margin: 30px 0;
+}
+
+.flashcard {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0;
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+
+#card-korean { font-size: 3rem; margin-bottom: 10px; }
+#card-meaning { font-size: 1.8rem; }
+.example-text { margin-top: 15px; font-style: italic; font-size: 0.9rem; }
+
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.progress-info { text-align: center; margin-top: 20px; color: var(--text-muted); }
+
+.speak-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let vocabData = [];
+let currentIndex = 0;
+const card = document.getElementById('flashcard');
+
+async function loadVocab() {
+    const response = await fetch('/api/vocabulary');
+    vocabData = await response.json();
+    vocabData = vocabData.sort(() => Math.random() - 0.5); // Shuffle
+    document.getElementById('total-count').textContent = vocabData.length;
+    updateCard();
+}
+
+function updateCard() {
+    if (vocabData.length === 0) return;
+    
+    const v = vocabData[currentIndex];
+    document.getElementById('card-korean').textContent = v.korean;
+    document.getElementById('card-roman').textContent = v.romanization;
+    document.getElementById('card-meaning').textContent = v.meaning;
+    document.getElementById('card-example').textContent = v.example || '';
+    document.getElementById('current-index').textContent = currentIndex + 1;
+    
+    card.classList.remove('flipped');
+}
+
+function nextCard() {
+    currentIndex = (currentIndex + 1) % vocabData.length;
+    updateCard();
+}
+
+function prevCard() {
+    currentIndex = (currentIndex - 1 + vocabData.length) % vocabData.length;
+    updateCard();
+}
+
+function speakCurrent() {
+    speak(vocabData[currentIndex].korean);
+}
+
+card.onclick = () => {
+    card.classList.toggle('flipped');
+};
+
+loadVocab();
+</script>
+{% endblock %}

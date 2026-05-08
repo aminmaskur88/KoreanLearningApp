@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade">
+    <div class="lesson-header">
+        <a href="{{ url_for('views.dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Kembali</a>
+        <h2>Level 1: Perkenalan & Cara Baca</h2>
+    </div>
+
+    <div class="card lesson-section">
+        <h3>1. Struktur Suku Kata</h3>
+        <p>Bahasa Korea ditulis dalam blok suku kata. Setiap blok terdiri dari minimal satu konsonan dan satu vokal.</p>
+        <div class="syllable-demo">
+            <div class="block">
+                <span class="char">한</span>
+                <span class="desc">H + A + N</span>
+            </div>
+            <div class="block">
+                <span class="char">국</span>
+                <span class="desc">G + U + K</span>
+            </div>
+        </div>
+        <p class="tip"><strong>Tips:</strong> Baca dari kiri ke kanan, atas ke bawah.</p>
+    </div>
+
+    <div class="card lesson-section">
+        <h3>2. Kata Perkenalan Dasar (Analisis Mendalam)</h3>
+        <p>Mari kita bedah kata-kata ini per karakter agar Anda paham cara bacanya.</p>
+        
+        <div class="word-intro" onclick="speak('안녕하세요')">
+            <div class="word-main">
+                <h1 class="ko">안녕하세요</h1>
+                <p class="ro">An-nyeong-ha-se-yo</p>
+            </div>
+            
+            <div class="breakdown-container">
+                <div class="breakdown-item">
+                    <span class="part">안</span>
+                    <span class="math">ㅇ+ㅏ+ㄴ</span>
+                    <span class="phonetic">a+n</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">녕</span>
+                    <span class="math">ㄴ+ㅕ+ㅇ</span>
+                    <span class="phonetic">ny+eo+ng</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">하</span>
+                    <span class="math">ㅎ+ㅏ</span>
+                    <span class="phonetic">h+a</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">세</span>
+                    <span class="math">ㅅ+ㅔ</span>
+                    <span class="phonetic">s+e</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">요</span>
+                    <span class="math">ㅇ+ㅛ</span>
+                    <span class="phonetic">y+o</span>
+                </div>
+            </div>
+            <i class="fas fa-volume-up speak-icon"></i>
+        </div>
+
+        <div class="word-intro" onclick="speak('감사합니다')">
+            <div class="word-main">
+                <h1 class="ko">감사합니다</h1>
+                <p class="ro">Gam-sa-ham-ni-da</p>
+            </div>
+            <div class="breakdown-container">
+                <div class="breakdown-item">
+                    <span class="part">감</span>
+                    <span class="math">ㄱ+ㅏ+ㅁ</span>
+                    <span class="phonetic">g+a+m</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">사</span>
+                    <span class="math">ㅅ+ㅏ</span>
+                    <span class="phonetic">s+a</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">합</span>
+                    <span class="math">ㅎ+ㅏ+ㅂ</span>
+                    <span class="phonetic">ha+m*</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">니</span>
+                    <span class="math">ㄴ+ㅣ</span>
+                    <span class="phonetic">n+i</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="part">다</span>
+                    <span class="math">ㄷ+ㅏ</span>
+                    <span class="phonetic">d+a</span>
+                </div>
+            </div>
+            <p class="tip" style="margin-top:10px; font-size: 0.75rem;">*Catatan: 'ㅂ' di kata '합' dibaca 'm' karena bertemu 'ㄴ'. Ini adalah aturan perubahan bunyi.</p>
+            <i class="fas fa-volume-up speak-icon"></i>
+        </div>
+    </div>
+
+    <div class="card lesson-section">
+        <h3>3. Latihan Membaca Cepat</h3>
+        <p>Coba ucapkan kata-kata pendek ini:</p>
+        <div class="grid-2">
+            <div class="mini-word" onclick="speak('나')">
+                <span class="ko">나</span>
+                <span class="ro">Na (Saya)</span>
+            </div>
+            <div class="mini-word" onclick="speak('너')">
+                <span class="ko">너</span>
+                <span class="ro">Neo (Kamu)</span>
+            </div>
+            <div class="mini-word" onclick="speak('물')">
+                <span class="ko">물</span>
+                <span class="ro">Mul (Air)</span>
+            </div>
+            <div class="mini-word" onclick="speak('집')">
+                <span class="ko">집</span>
+                <span class="ro">Jip (Rumah)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="lesson-footer">
+        <button class="btn btn-primary" onclick="completeIntro()">Selesai & Ambil XP</button>
+    </div>
+</div>
+
+<style>
+.lesson-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.back-link { text-decoration: none; color: var(--text-muted); font-size: 0.9rem; }
+
+.lesson-section { margin-bottom: 20px; }
+.lesson-section h3 { color: var(--secondary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+.lesson-section p { font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
+
+.syllable-demo { display: flex; gap: 20px; justify-content: center; margin: 20px 0; }
+.block { display: flex; flex-direction: column; align-items: center; background: var(--border); padding: 15px; border-radius: 10px; width: 80px; }
+.block .char { font-size: 2rem; font-weight: bold; color: var(--primary); }
+.block .desc { font-size: 0.7rem; margin-top: 5px; font-weight: bold; }
+
+.word-intro { 
+    background: var(--background); 
+    border: 2px solid var(--primary); 
+    border-radius: 12px; 
+    padding: 20px; 
+    margin-bottom: 15px; 
+    position: relative;
+    cursor: pointer;
+}
+.word-intro:active { transform: scale(0.98); }
+.word-main { text-align: center; margin-bottom: 15px; }
+.word-main .ko { font-size: 2.5rem; color: var(--primary); }
+.word-main .ro { font-size: 1rem; color: var(--text-muted); font-style: italic; }
+
+.breakdown-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    border-top: 1px dashed var(--border);
+    padding-top: 15px;
+}
+
+.breakdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    min-width: 60px;
+}
+
+.breakdown-item .part {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.breakdown-item .math {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.breakdown-item .phonetic {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.word-desc { font-size: 0.9rem; }
+.word-desc .note { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
+.speak-icon { position: absolute; top: 15px; right: 15px; color: var(--primary); font-size: 1.2rem; }
+
+.mini-word {
+    background: var(--background);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+.mini-word .ko { font-size: 1.5rem; font-weight: bold; }
+.mini-word .ro { font-size: 0.8rem; color: var(--text-muted); }
+
+.tip { background: #fff9db; padding: 10px; border-radius: 8px; color: #856404; font-size: 0.85rem; }
+body.dark-mode .tip { background: #2d2a1a; color: #ffe066; }
+
+.lesson-footer { margin-top: 30px; padding-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function completeIntro() {
+    await addXP(20);
+    showAlert("Bagus!", "Anda menyelesaikan pelajaran pertama. +20 XP", () => {
+        window.location.href = "{{ url_for('views.dashboard') }}";
+    });
+}
+</script>
+{% endblock %}

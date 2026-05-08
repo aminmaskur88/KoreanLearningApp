@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Korean Study - Belajar Bahasa Korea Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#58cc02">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <header>
+        <div class="top-bar">
+            <div class="stat-item" id="streak-container">
+                <i class="fas fa-fire" style="color: var(--danger);"></i>
+                <span id="streak-count">0</span>
+            </div>
+            <div class="stat-item" id="xp-container">
+                <i class="fas fa-star" style="color: var(--warning);"></i>
+                <span id="xp-count">0</span>
+            </div>
+            <div class="stat-item">
+                <button id="fullscreen-toggle" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color: var(--text);">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+            <div class="stat-item">
+                <button id="theme-toggle" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="{{ url_for('views.dashboard') }}" class="nav-item {% if request.endpoint == 'views.dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('views.hangul') }}" class="nav-item {% if request.endpoint == 'views.hangul' %}active{% endif %}">
+            <i class="fas fa-font"></i>
+            <span>Hangul</span>
+        </a>
+        <a href="{{ url_for('views.vocabulary') }}" class="nav-item {% if request.endpoint == 'views.vocabulary' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Kamus</span>
+        </a>
+        <a href="{{ url_for('views.flashcards') }}" class="nav-item {% if request.endpoint == 'views.flashcards' %}active{% endif %}">
+            <i class="fas fa-clone"></i>
+            <span>Flash</span>
+        </a>
+        <a href="{{ url_for('views.quiz') }}" class="nav-item {% if request.endpoint == 'views.quiz' %}active{% endif %}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Quiz</span>
+        </a>
+    </nav>
+
+    <!-- Global Custom Modal -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Info</h3>
+            <p id="modal-message">Pesan di sini...</p>
+            <button id="modal-action-btn" class="btn btn-primary">Oke</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

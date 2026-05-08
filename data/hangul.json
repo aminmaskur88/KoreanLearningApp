@@ -1,0 +1,170 @@
+[
+  {
+    "char": "ㄱ",
+    "name": "Giyeok",
+    "type": "Konsonan",
+    "romanization": "g/k",
+    "pronunciation": "Seperti 'g' dalam 'gajah' atau 'k' dalam 'kaki'"
+  },
+  {
+    "char": "ㄴ",
+    "name": "Nieun",
+    "type": "Konsonan",
+    "romanization": "n",
+    "pronunciation": "Seperti 'n' dalam 'nasi'"
+  },
+  {
+    "char": "ㄷ",
+    "name": "Digeut",
+    "type": "Konsonan",
+    "romanization": "d/t",
+    "pronunciation": "Seperti 'd' dalam 'dua' atau 't' dalam 'tiga'"
+  },
+  {
+    "char": "ㄹ",
+    "name": "Rieul",
+    "type": "Konsonan",
+    "romanization": "r/l",
+    "pronunciation": "Seperti 'r' dalam 'roda' atau 'l' dalam 'lampu'"
+  },
+  {
+    "char": "ㅁ",
+    "name": "Mieum",
+    "type": "Konsonan",
+    "romanization": "m",
+    "pronunciation": "Seperti 'm' dalam 'makan'"
+  },
+  {
+    "char": "ㅂ",
+    "name": "Bieup",
+    "type": "Konsonan",
+    "romanization": "b/p",
+    "pronunciation": "Seperti 'b' dalam 'buku' atau 'p' dalam 'pintu'"
+  },
+  {
+    "char": "ㅅ",
+    "name": "Siot",
+    "type": "Konsonan",
+    "romanization": "s",
+    "pronunciation": "Seperti 's' dalam 'satu'"
+  },
+  {
+    "char": "ㅇ",
+    "name": "Ieung",
+    "type": "Konsonan",
+    "romanization": "ng",
+    "pronunciation": "Tidak berbunyi di awal, seperti 'ng' dalam 'singa' di akhir"
+  },
+  {
+    "char": "ㅈ",
+    "name": "Jieut",
+    "type": "Konsonan",
+    "romanization": "j",
+    "pronunciation": "Seperti 'j' dalam 'jalan'"
+  },
+  {
+    "char": "ㅊ",
+    "name": "Chieut",
+    "type": "Konsonan",
+    "romanization": "ch",
+    "pronunciation": "Seperti 'ch' dalam 'cacing' (aspirasi)"
+  },
+  {
+    "char": "ㅋ",
+    "name": "Kieuk",
+    "type": "Konsonan",
+    "romanization": "k",
+    "pronunciation": "Seperti 'k' dalam 'kursi' (aspirasi)"
+  },
+  {
+    "char": "ㅌ",
+    "name": "Tieut",
+    "type": "Konsonan",
+    "romanization": "t",
+    "pronunciation": "Seperti 't' dalam 'topi' (aspirasi)"
+  },
+  {
+    "char": "ㅍ",
+    "name": "Pieup",
+    "type": "Konsonan",
+    "romanization": "p",
+    "pronunciation": "Seperti 'p' dalam 'pulpen' (aspirasi)"
+  },
+  {
+    "char": "ㅎ",
+    "name": "Hieut",
+    "type": "Konsonan",
+    "romanization": "h",
+    "pronunciation": "Seperti 'h' dalam 'hari'"
+  },
+  {
+    "char": "ㅏ",
+    "name": "A",
+    "type": "Vokal",
+    "romanization": "a",
+    "pronunciation": "Seperti 'a' dalam 'apa'"
+  },
+  {
+    "char": "ㅑ",
+    "name": "Ya",
+    "type": "Vokal",
+    "romanization": "ya",
+    "pronunciation": "Seperti 'ya' dalam 'saya'"
+  },
+  {
+    "char": "ㅓ",
+    "name": "Eo",
+    "type": "Vokal",
+    "romanization": "eo",
+    "pronunciation": "Seperti 'o' dalam 'obat' (terbuka)"
+  },
+  {
+    "char": "ㅕ",
+    "name": "Yeo",
+    "type": "Vokal",
+    "romanization": "yeo",
+    "pronunciation": "Seperti 'yo' dalam 'yogya' (terbuka)"
+  },
+  {
+    "char": "ㅗ",
+    "name": "O",
+    "type": "Vokal",
+    "romanization": "o",
+    "pronunciation": "Seperti 'o' dalam 'orang' (tertutup)"
+  },
+  {
+    "char": "ㅛ",
+    "name": "Yo",
+    "type": "Vokal",
+    "romanization": "yo",
+    "pronunciation": "Seperti 'yo' dalam 'yo-yo'"
+  },
+  {
+    "char": "ㅜ",
+    "name": "U",
+    "type": "Vokal",
+    "romanization": "u",
+    "pronunciation": "Seperti 'u' dalam 'ular'"
+  },
+  {
+    "char": "ㅠ",
+    "name": "Yu",
+    "type": "Vokal",
+    "romanization": "yu",
+    "pronunciation": "Seperti 'yu' dalam 'yuta'"
+  },
+  {
+    "char": "ㅡ",
+    "name": "Eu",
+    "type": "Vokal",
+    "romanization": "eu",
+    "pronunciation": "Seperti 'e' dalam 'emas'"
+  },
+  {
+    "char": "ㅣ",
+    "name": "I",
+    "type": "Vokal",
+    "romanization": "i",
+    "pronunciation": "Seperti 'i' dalam 'ikan'"
+  }
+]

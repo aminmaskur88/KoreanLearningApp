@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="session-wrapper" class="session-wrapper">
+    <!-- Progress Bar -->
+    <div class="session-header">
+        <a href="{{ url_for('views.dashboard') }}" class="close-session"><i class="fas fa-times"></i></a>
+        <div class="progress-container">
+            <div id="session-progress" class="progress-fill" style="width: 0%;"></div>
+        </div>
+        <div class="hearts">
+            <i class="fas fa-heart"></i> 5
+        </div>
+    </div>
+
+    <!-- Active Card Area -->
+    <div id="active-card" class="active-card animate-fade">
+        <!-- Content will be injected by JS -->
+    </div>
+
+    <!-- Footer Action -->
+    <div id="session-footer" class="session-footer">
+        <div class="feedback-info" style="display: none;">
+            <div class="feedback-icon-container">
+                <i id="status-icon" class="fas"></i>
+            </div>
+            <div class="feedback-text">
+                <h3 id="status-title">Bagus!</h3>
+                <p id="status-msg">Jawaban benar.</p>
+            </div>
+        </div>
+        <button id="main-action-btn" class="btn btn-primary" onclick="handleAction()">Lanjut</button>
+    </div>
+</div>
+
+<style>
+/* Full screen session style */
+body { overflow: hidden; }
+header, .bottom-nav { display: none; }
+main { padding: 0; max-width: 100%; height: 100vh; }
+
+.session-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.session-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.close-session { color: var(--text-muted); font-size: 1.5rem; text-decoration: none; }
+
+.progress-container {
+    flex: 1;
+    background: var(--border);
+    height: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--primary);
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.hearts {
+    color: var(--danger);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.active-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Question Types */
+.question-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 30px; text-align: left; }
+
+/* Intro Card (New Word) */
+.intro-card { text-align: center; }
+.intro-word { font-size: 4rem; color: var(--primary); font-weight: 900; margin-bottom: 10px; }
+.intro-word.clickable { cursor: pointer; text-decoration: underline dotted var(--border); }
+.intro-word.clickable:active { color: var(--primary-dark); }
+
+.hint-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.hint-bubble {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    display: inline-block;
+    margin-bottom: 10px;
+    position: relative;
+    box-shadow: 0 2px 0 0 var(--border);
+    transition: all 0.2s;
+}
+
+.hint-bubble.active {
+    background: var(--secondary);
+    border-color: var(--secondary-dark);
+    color: white;
+    box-shadow: 0 2px 0 0 var(--secondary-dark);
+}
+
+.hint-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid var(--border);
+}
+
+.hint-bubble.active::after {
+    border-top-color: var(--secondary-dark);
+}
+
+/* Choice Card */
+.options-stack { display: flex; flex-direction: column; gap: 12px; }
+.option-btn {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: 0 4px 0 0 var(--border);
+    transition: transform 0.1s;
+}
+.option-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 0 var(--border); }
+.option-btn.selected { border-color: var(--secondary); background-color: #e5f5ff; color: var(--secondary); box-shadow: 0 4px 0 0 #1899d6; }
+
+/* Listening & Typing */
+.listening-box {
+    width: 120px;
+    height: 120px;
+    background: var(--secondary);
+    color: white;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 40px auto;
+    font-size: 3rem;
+    box-shadow: 0 6px 0 0 var(--secondary-dark);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.listening-box:active { transform: translateY(3px); box-shadow: 0 3px 0 0 var(--secondary-dark); }
+
+.typing-input {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: #f7f7f7;
+    color: var(--text);
+    outline: none;
+    text-align: center;
+}
+.typing-input:focus { border-color: var(--secondary); background: white; }
+
+/* Character Bank */
+.writing-area {
+    min-height: 80px;
+    border: 2px dashed var(--border);
+    background: var(--background);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.character-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.char-bubble {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px 0 0 var(--border);
+}
+
+.char-bubble:active { transform: translateY(2px); box-shadow: none; }
+.char-bubble.used { opacity: 0.3; pointer-events: none; }
+
+.selected-char {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Speaking Challenge */
+.speaking-target {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+.speaking-target i { color: var(--secondary); font-size: 1.5rem; }
+
+.mic-container {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.mic-btn {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    font-size: 2.5rem;
+    box-shadow: 0 6px 0 0 var(--primary-dark);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mic-btn:active { transform: translateY(4px); box-shadow: none; }
+.mic-btn.listening {
+    background: var(--danger);
+    box-shadow: 0 6px 0 0 var(--danger-dark);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.mic-status { margin-top: 15px; font-weight: bold; color: var(--text-muted); }
+.recognition-result { margin-top: 20px; font-size: 1.5rem; font-weight: 800; color: var(--secondary); text-align: center; min-height: 2rem; }
+
+/* Footer Action */
+.session-footer {
+    height: 140px;
+    margin: 0 -20px -20px -20px;
+    padding: 20px;
+    border-top: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.feedback-info { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.feedback-icon-container {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.session-footer.correct { background: #d7ffb8; }
+.session-footer.correct .feedback-icon-container { background: white; color: var(--primary); }
+.session-footer.correct h3 { color: var(--primary-dark); }
+
+.session-footer.wrong { background: #ffdfe0; }
+.session-footer.wrong .feedback-icon-container { background: white; color: var(--danger); }
+.session-footer.wrong h3 { color: var(--danger-dark); }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const category = "{{ category }}";
+let steps = [];
+let currentStepIdx = 0;
+let isAnswered = false;
+let selectedCardId = null;
+
+let allVocabPool = [];
+
+async function initSession() {
+    try {
+        const response = await fetch(`/api/vocabulary?category=${encodeURIComponent(category)}`);
+        const vocab = await response.json();
+        
+        const allRes = await fetch('/api/vocabulary');
+        allVocabPool = await allRes.json();
+        
+        if (vocab.length === 0) {
+            showAlert("Info", "Materi untuk kategori ini belum tersedia.", () => {
+                window.location.href = "/";
+            });
+            return;
+        }
+        
+        vocab.slice(0, 5).forEach(item => {
+            steps.push({ type: 'intro', data: item });
+            steps.push({ type: 'listening', data: item, options: generateOptions(item) });
+            steps.push({ type: 'choice', data: item, options: generateOptions(item) });
+            steps.push({ type: 'typing', data: item });
+            steps.push({ type: 'typing_ko', data: item });
+            steps.push({ type: 'speaking', data: item });
+        });
+        
+        renderStep();
+    } catch (e) {
+        console.error("Session Init Error:", e);
+    }
+}
+
+function generateOptions(correctItem) {
+    let opts = [correctItem];
+    let distractorPool = allVocabPool.filter(v => v.id !== correctItem.id);
+    let distractors = distractorPool.sort(() => Math.random() - 0.5).slice(0, 3);
+    opts = opts.concat(distractors);
+    return opts.sort(() => Math.random() - 0.5);
+}
+
+function renderStep() {
+    isAnswered = false;
+    selectedCardId = null;
+    const step = steps[currentStepIdx];
+    const container = document.getElementById('active-card');
+    const footer = document.getElementById('session-footer');
+    const btn = document.getElementById('main-action-btn');
+    const feedback = document.querySelector('.feedback-info');
+    
+    // Reset UI
+    footer.className = 'session-footer';
+    feedback.style.display = 'none';
+    btn.textContent = step.type === 'intro' ? 'Mengerti' : 'Periksa';
+    btn.className = 'btn btn-primary';
+    
+    container.innerHTML = '';
+    container.className = 'active-card animate-fade';
+    
+    if (step.type === 'intro') {
+        speak(step.data.korean);
+        container.innerHTML = `
+            <div class="intro-card">
+                <p class="question-title">Kata Baru!</p>
+                <div class="hint-wrapper">
+                    <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')">${step.data.korean}</h1>
+                    <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
+                </div>
+                <div class="card intro-meaning-card">
+                    <p class="intro-meaning">${step.data.meaning}</p>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.9rem;" class="session-example">
+                    "${step.data.example}"
+                </p>
+            </div>
+        `;
+    } else if (step.type === 'choice') {
+        container.innerHTML = `
+            <p class="question-title">Pilih arti yang benar:</p>
+            <div class="hint-wrapper">
+                <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')" style="font-size: 3rem;">${step.data.korean}</h1>
+                <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
+            </div>
+            <div class="options-stack">
+                ${step.options.map(opt => `
+                    <button class="option-btn" onclick="selectOption('${opt.id}', this)">
+                        ${opt.meaning}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    } else if (step.type === 'listening') {
+        speak(step.data.korean);
+        container.innerHTML = `
+            <p class="question-title">Dengar dan pilih arti yang benar:</p>
+            <div class="listening-box" onclick="speak('${step.data.korean}')">
+                <i class="fas fa-volume-up"></i>
+            </div>
+            <div class="options-stack">
+                ${step.options.map(opt => `
+                    <button class="option-btn" onclick="selectOption('${opt.id}', this)">
+                        ${opt.meaning}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    } else if (step.type === 'typing') {
+        container.innerHTML = `
+            <p class="question-title">Tulis arti kata ini dalam Bahasa Indonesia:</p>
+            <h1 class="intro-word" style="font-size: 3.5rem; margin-bottom: 40px;">${step.data.korean}</h1>
+            <input type="text" id="typing-input" class="typing-input" placeholder="Ketik di sini..." autocomplete="off">
+        `;
+        setTimeout(() => document.getElementById('typing-input').focus(), 100);
+    } else if (step.type === 'typing_ko') {
+        currentWritten = []; // Reset writing area
+        const syllables = step.data.korean.split('');
+        let bank = [...syllables];
+        const decoys = ['은', '는', '이', '가', '을', '를'];
+        while(bank.length < 8) {
+            let d = decoys[Math.floor(Math.random() * decoys.length)];
+            if(!bank.includes(d)) bank.push(d);
+        }
+        bank = bank.sort(() => Math.random() - 0.5);
+
+        container.innerHTML = `
+            <p class="question-title">Susun dalam Bahasa Korea:</p>
+            <h2 class="intro-meaning" style="margin-bottom: 30px; color: var(--secondary);">${step.data.meaning}</h2>
+            <div id="writing-area" class="writing-area card"></div>
+            <div class="character-bank">
+                ${bank.map(char => `<button class="char-bubble" onclick="addChar('${char}', this)">${char}</button>`).join('')}
+            </div>
+            <button class="btn-secondary" style="margin-top: 10px; border:none; background:none; font-size: 0.8rem;" onclick="clearWriting()">Hapus Semua</button>
+        `;
+    } else if (step.type === 'speaking') {
+        container.innerHTML = `
+            <p class="question-title">Ucapkan kata ini:</p>
+            <div class="speaking-target" onclick="speak('${step.data.korean}')">
+                <i class="fas fa-volume-up"></i>
+                <h1 class="intro-word">${step.data.korean}</h1>
+            </div>
+            <p class="intro-roman" style="text-align:center; margin-top:-10px;">${step.data.romanization}</p>
+            
+            <div class="mic-container">
+                <button id="mic-btn" class="mic-btn" onclick="startListening()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <p id="mic-status" class="mic-status">Ketuk mikrofon untuk bicara</p>
+            </div>
+            
+            <div id="recognition-result" class="recognition-result"></div>
+        `;
+    }
+    
+    // Update progress
+    document.getElementById('session-progress').style.width = `${(currentStepIdx / steps.length) * 100}%`;
+}
+
+function selectOption(id, btn) {
+    if (isAnswered) return;
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCardId = id;
+}
+
+function toggleHint(el, roman) {
+    const bubble = document.getElementById('hint-bubble');
+    if (bubble.classList.contains('active')) {
+        bubble.classList.remove('active');
+        bubble.textContent = 'Ketuk untuk cara baca';
+    } else {
+        bubble.classList.add('active');
+        bubble.textContent = roman;
+        speak(el.textContent);
+    }
+}
+
+let currentWritten = [];
+
+function addChar(char, btn) {
+    currentWritten.push(char);
+    btn.classList.add('used');
+    renderWriting();
+}
+
+function removeChar(idx, char) {
+    currentWritten.splice(idx, 1);
+    // Find the bubble and restore it
+    const bubbles = document.querySelectorAll('.char-bubble');
+    for (let b of bubbles) {
+        if (b.textContent === char && b.classList.contains('used')) {
+            b.classList.remove('used');
+            break;
+        }
+    }
+    renderWriting();
+}
+
+function clearWriting() {
+    currentWritten = [];
+    document.querySelectorAll('.char-bubble').forEach(b => b.classList.remove('used'));
+    renderWriting();
+}
+
+function renderWriting() {
+    const area = document.getElementById('writing-area');
+    area.innerHTML = currentWritten.map((c, i) => 
+        `<button class="selected-char animate-fade" onclick="removeChar(${i}, '${c}')">${c}</button>`
+    ).join('');
+}
+
+let recognition;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+}
+
+function startListening() {
+    if (!recognition) {
+        showAlert('Info', 'Browser Anda tidak mendukung pengenalan suara.');
+        return;
+    }
+
+    const btn = document.getElementById('mic-btn');
+    const status = document.getElementById('mic-status');
+    const resultDiv = document.getElementById('recognition-result');
+
+    try {
+        recognition.start();
+        btn.classList.add('listening');
+        status.textContent = 'Mendengarkan...';
+    } catch (e) {
+        console.error(e);
+    }
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        resultDiv.textContent = transcript;
+        btn.classList.remove('listening');
+        status.textContent = 'Selesai mendengarkan';
+
+        const step = steps[currentStepIdx];
+        // Clean transcript and target for comparison (remove spaces/punct)
+        const cleanT = transcript.replace(/\s/g, '');
+        const cleanTarget = step.data.korean.replace(/\s/g, '');
+
+        if (cleanT === cleanTarget) {
+            handleAction(true); // Force correct
+        } else {
+            status.textContent = 'Kurang tepat, coba lagi?';
+        }
+    };
+
+    recognition.onerror = () => {
+        btn.classList.remove('listening');
+        status.textContent = 'Error akses mikrofon.';
+    };
+
+    recognition.onend = () => {
+        btn.classList.remove('listening');
+    };
+}
+
+function handleAction(forceCorrect = false) {
+    const step = steps[currentStepIdx];
+    const footer = document.getElementById('session-footer');
+    const btn = document.getElementById('main-action-btn');
+    const feedback = document.querySelector('.feedback-info');
+    
+    if (step.type === 'intro') {
+        currentStepIdx++;
+        if (currentStepIdx < steps.length) renderStep();
+        else finishSession();
+        return;
+    }
+
+    if (!isAnswered) {
+        let isCorrect = forceCorrect;
+
+        if (!forceCorrect) {
+            if (step.type === 'typing') {
+                const input = document.getElementById('typing-input').value.trim().toLowerCase();
+                const correct = step.data.meaning.trim().toLowerCase();
+                isCorrect = input === correct;
+            } else if (step.type === 'typing_ko') {
+                const input = currentWritten.join('');
+                isCorrect = input === step.data.korean;
+            } else if (step.type === 'speaking') {
+                return; // Wait for voice result or manual check (skip)
+            } else {
+                if (!selectedCardId) return;
+                isCorrect = selectedCardId == step.data.id;
+            }
+        }
+        
+        isAnswered = true;
+        footer.className = `session-footer ${isCorrect ? 'correct' : 'wrong'}`;
+        feedback.style.display = 'flex';
+        document.getElementById('status-title').textContent = isCorrect ? 'Bagus!' : 'Salah';
+        document.getElementById('status-msg').textContent = isCorrect ? 'Jawaban Anda benar.' : `Harusnya: ${step.data.korean}`;
+        document.getElementById('status-icon').className = isCorrect ? 'fas fa-check' : 'fas fa-times';
+        btn.textContent = 'Lanjut';
+    } else {
+        currentStepIdx++;
+        if (currentStepIdx < steps.length) renderStep();
+        else finishSession();
+    }
+}
+
+async function finishSession() {
+    await addXP(15);
+    window.location.href = "{{ url_for('views.dashboard') }}";
+}
+
+initSession();
+</script>
+{% endblock %}

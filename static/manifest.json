@@ -1,0 +1,17 @@
+{
+  "name": "K-Study: Belajar Bahasa Korea",
+  "short_name": "K-Study",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#58cc02",
+  "description": "Aplikasi belajar Bahasa Korea modern dan ringan.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5111/5111570.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
