@@ -382,9 +382,45 @@ var allVocabPool = [];
 var hearts = 5;
 
 async function initSession() {
+    const container = document.getElementById('active-card');
+    container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Menyiapkan materi...</div>';
+    
+    // Reset steps
+    steps = [];
+    currentStepIdx = 0;
+
     try {
         let vocab = [];
-        if (category.startsWith('Hangul')) {
+        if (category === 'AI_Exam') {
+            const response = await fetch('/api/generate_ai_exam');
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Gagal memuat ujian AI");
+            }
+            const aiData = await response.json();
+            console.log("AI Data received:", aiData);
+            
+            const questions = Array.isArray(aiData) ? aiData : aiData.questions || [];
+            if (questions.length === 0) {
+                throw new Error("AI tidak menghasilkan soal. Silakan berlatih lebih banyak dulu!");
+            }
+
+            // Map AI questions to session steps
+            questions.forEach(q => {
+                steps.push({
+                    type: q.type === 'choice' ? 'choice' : q.type,
+                    data: {
+                        korean: q.target || q.question,
+                        meaning: q.answer,
+                        id: q.answer, 
+                        example: "Latihan khusus AI",
+                        romanization: ""
+                    },
+                    question: q.question,
+                    options: q.options ? q.options.map(o => ({ meaning: o, id: o })) : []
+                });
+            });
+        } else if (category.startsWith('Hangul')) {
             const response = await fetch('/api/hangul');
             const hangul = await response.json();
             
@@ -484,6 +520,9 @@ async function initSession() {
         renderStep();
     } catch (e) {
         console.error("Session Init Error:", e);
+        showAlert("Maaf", e.message, () => {
+            window.location.href = "/";
+        });
     }
 }
 
@@ -532,7 +571,20 @@ function generateOptions(correctItem) {
 function renderStep() {
     isAnswered = false;
     selectedCardId = null;
+    if (steps.length === 0 || currentStepIdx >= steps.length) {
+        showAlert("Error", "Gagal memuat langkah soal.");
+        window.location.href = "/";
+        return;
+    }
+    
     const step = steps[currentStepIdx];
+    if (!step || !step.data) {
+        console.error("Step data missing:", step);
+        currentStepIdx++;
+        renderStep();
+        return;
+    }
+
     const container = document.getElementById('active-card');
     const footer = document.getElementById('session-footer');
     const btn = document.getElementById('main-action-btn');
@@ -863,8 +915,13 @@ function handleAction(forceCorrect = false) {
 
     if (!isAnswered) {
         let isCorrect = forceCorrect;
+        
+        // Developer Mode: Auto-win
+        if (localStorage.getItem('devMode') === 'true') {
+            isCorrect = true;
+        }
 
-        if (!forceCorrect) {
+        if (!forceCorrect && !isCorrect) {
             if (step.type === 'typing') {
                 const input = document.getElementById('typing-input').value.trim().toLowerCase();
                 const correct = step.data.meaning.trim().toLowerCase();
@@ -903,6 +960,17 @@ function handleAction(forceCorrect = false) {
         if (!isCorrect) {
             hearts--;
             updateHearts();
+            
+            // Report mistake to AI tracking
+            fetch('/api/report_mistake', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    item_type: step.data.char ? 'hangul' : 'vocab', 
+                    item_id: step.data.id 
+                })
+            });
+
             // Push failed step to end
             steps.push(JSON.parse(JSON.stringify(step)));
             

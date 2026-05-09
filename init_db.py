@@ -47,16 +47,23 @@ def init_db():
     )
     ''')
 
-    # Create progress table
+    # Create user_mistakes table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS progress (
+    CREATE TABLE IF NOT EXISTS user_mistakes (
         user_id INTEGER,
-        vocab_id INTEGER,
-        status TEXT DEFAULT 'learning',
-        FOREIGN KEY(user_id) REFERENCES users(id),
-        FOREIGN KEY(vocab_id) REFERENCES vocabulary(id)
+        item_type TEXT, -- 'vocab' or 'hangul'
+        item_id INTEGER,
+        wrong_count INTEGER DEFAULT 0,
+        last_wrong DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(user_id, item_type, item_id)
     )
     ''')
+
+    # Add AI exam key to users (optional, but good for persistence)
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN gemini_api_key TEXT")
+    except:
+        pass # Already exists
 
     # Create quiz_history table
     cursor.execute('''
@@ -75,7 +82,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS category_progress (
         user_id INTEGER,
         category TEXT,
-        completed BOOLEAN DEFAULT 0,
+        pass_count INTEGER DEFAULT 0,
         PRIMARY KEY(user_id, category)
     )
     ''')

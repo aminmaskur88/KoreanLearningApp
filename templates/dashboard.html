@@ -55,6 +55,28 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.pass-indicators {
+    position: absolute;
+    bottom: -40px;
+    display: flex;
+    gap: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--text-muted);
+}
+
+.indicator.active {
+    background: var(--warning);
+    border-color: var(--warning-dark);
+}
+
 .loading-state { text-align: center; padding: 50px; color: var(--text-muted); font-weight: bold; }
 </style>
 {% endblock %}
@@ -81,8 +103,9 @@ function renderCurriculum(data, passed) {
     const container = document.getElementById('curriculum-view');
     container.innerHTML = '';
 
-    let lastPassedFound = false;
+    let lastFullyPassedFound = false;
     let globalNodeIndex = 0;
+    const isDevMode = localStorage.getItem('devMode') === 'true';
 
     data.sections.forEach(section => {
         const sectionEl = document.createElement('div');
@@ -101,35 +124,46 @@ function renderCurriculum(data, passed) {
 
         section.units.forEach((unit, uIdx) => {
             const node = document.createElement('a');
-            const isPassed = passed.includes(unit.progress_id);
+            const passCount = passed[unit.progress_id] || 0;
+            const isFullyPassed = passCount >= 3;
 
             // Zig-zag pattern
             const offset = (uIdx % 3 === 1) ? 35 : (uIdx % 3 === 2) ? -35 : 0;
 
-            node.className = `path-node ${isPassed ? 'passed' : ''}`;
+            node.className = `path-node ${isFullyPassed ? 'passed' : ''}`;
             node.style.transform = `translateX(${offset}px)`;
 
             if (section.id % 2 === 0) {
                 node.classList.add('secondary');
             }
 
+            // Pass Indicators (3 dots/stars)
+            let indicators = '<div class="pass-indicators">';
+            for(let i=1; i<=3; i++) {
+                indicators += `<div class="indicator ${i <= passCount ? 'active' : ''}"></div>`;
+            }
+            indicators += '</div>';
+
             node.innerHTML = `
                 <i class="${unit.icon}"></i>
                 <span class="node-label">${unit.title}</span>
+                ${indicators}
             `;
 
-            // Locking logic
-            if (isPassed) {
+            // Locking logic: Node is unlocked if previous is FULLY passed OR Dev Mode is active
+            if (isFullyPassed || isDevMode) {
                 node.href = unit.type === 'lesson' ? unit.link : `/session/${unit.category}`;
-            } else if (!lastPassedFound) {
+                node.classList.remove('locked');
+                node.onclick = null;
+            } else if (!lastFullyPassedFound) {
                 node.href = unit.type === 'lesson' ? unit.link : `/session/${unit.category}`;
-                lastPassedFound = true; // This is the active node
+                lastFullyPassedFound = true; // This is the active node
             } else {
                 node.classList.add('locked');
                 node.onclick = (e) => {
                     e.preventDefault();
                     e.stopImmediatePropagation();
-                    showAlert("Terkunci", "Selesaikan materi sebelumnya untuk membuka sesi ini!");
+                    showAlert("Terkunci", "Selesaikan materi sebelumnya (3x) untuk membuka sesi ini!");
                     return false;
                 };
             }
@@ -137,10 +171,20 @@ function renderCurriculum(data, passed) {
             path.appendChild(node);
             globalNodeIndex++;
         });
-
-        container.appendChild(sectionEl);
-    });
-}
+            // Add AI Exam Button at the end of section
+            const aiNode = document.createElement('a');
+            aiNode.className = 'path-node ai-exam-node';
+            aiNode.style.background = 'var(--warning)';
+            aiNode.style.boxShadow = '0 8px 0 0 var(--warning-dark)';
+            aiNode.href = `/session/AI_Exam`;
+            aiNode.innerHTML = `
+                <i class="fas fa-robot"></i>
+                <span class="node-label">Ujian AI</span>
+            `;
+            path.appendChild(aiNode);
+            container.appendChild(sectionEl);
+            });
+            }
 
 loadDashboard();
 </script>

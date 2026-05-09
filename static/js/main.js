@@ -184,6 +184,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('fullscreenchange', updateFSIcon);
 
+    // Dev Mode logic
+    const devToggle = document.getElementById('dev-toggle');
+    if (devToggle) {
+        if (localStorage.getItem('devMode') === 'true') {
+            devToggle.style.color = 'var(--warning)';
+        }
+
+        devToggle.addEventListener('click', () => {
+            const isDev = localStorage.getItem('devMode') === 'true';
+            if (isDev) {
+                localStorage.setItem('devMode', 'false');
+                devToggle.style.color = 'var(--text-muted)';
+                showAlert('Info', 'Mode Pengembang Dinonaktifkan');
+            } else {
+                localStorage.setItem('devMode', 'true');
+                devToggle.style.color = 'var(--warning)';
+                showAlert('Info', 'Mode Pengembang Aktif: Semua level terbuka & jawaban otomatis benar.');
+            }
+            // Refresh current view to apply changes
+            if (window.location.pathname === '/') loadDashboard();
+        });
+    }
+
     // SPA Link Interception
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a');
