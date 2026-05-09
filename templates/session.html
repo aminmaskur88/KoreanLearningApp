@@ -409,24 +409,30 @@ async function initSession() {
         
         if (questions.length === 0) throw new Error("AI tidak menghasilkan materi.");
 
-        questions.forEach(q => {
-            let stepType = q.type;
-            if (q.type === 'typing' && q.direction === 'id_to_ko') stepType = 'typing_ko';
+            // Map AI questions to session steps
+            questions.forEach(q => {
+                let stepType = q.type;
+                if (q.type === 'typing' && q.direction === 'id_to_ko') stepType = 'typing_ko';
+                
+                // AI speaking is always Korean target
+                if (q.type === 'speaking') {
+                    q.direction = 'ko_to_id'; 
+                }
 
-            steps.push({
-                type: stepType,
-                direction: q.direction,
-                data: {
-                    korean: q.target,
-                    meaning: q.answer,
-                    id: q.answer, 
-                    example: `Level: ${levelLabel}`,
-                    romanization: ""
-                },
-                question: q.question,
-                options: q.options ? q.options.map(o => ({ meaning: o, id: o })) : []
+                steps.push({
+                    type: stepType,
+                    direction: q.direction,
+                    data: {
+                        korean: q.target,
+                        meaning: q.answer,
+                        id: q.answer, 
+                        example: `Tingkat: ${levelLabel}`,
+                        romanization: q.romanization || ""
+                    },
+                    question: q.question,
+                    options: q.options ? q.options.map(o => ({ meaning: o, id: o })) : []
+                });
             });
-        });
 
         updateHearts();
         renderStep();
@@ -554,15 +560,19 @@ function renderStep() {
             </div>
         `;
     } else if (step.type === 'choice' || step.type === 'choice_char') {
+        // Only show hint if the target word is Korean
+        const showHint = step.type !== 'choice_char' && (step.direction !== 'id_to_ko');
+        
         container.innerHTML = `
             <p class="question-title">${step.question || 'Pilih arti yang benar:'}</p>
-            ${step.type === 'choice_char' || category === 'AI_Exam' ? '' : `
+            ${showHint ? `
                 <div class="hint-wrapper">
                     <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')" style="font-size: 3rem;">${step.data.korean}</h1>
                     <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
                 </div>
+            ` : `
+                <h1 class="intro-word" style="font-size: 3rem; margin-bottom:20px;">${step.data.korean}</h1>
             `}
-            ${category === 'AI_Exam' ? `<h1 class="intro-word" style="font-size: 3rem; margin-bottom:20px;">${step.data.korean}</h1>` : ''}
             <div class="options-stack">
                 ${step.options.map(opt => `
                     <button class="option-btn" onclick="selectOption('${step.type === 'choice_char' ? opt.char : opt.id}', this)">
@@ -624,6 +634,9 @@ function renderStep() {
             </div>
         `;
     } else if (step.type === 'typing') {
+        const isAI = !!step.direction;
+        const promptWord = isAI ? step.data.korean : step.data.korean; // AI target is prompt
+        
         container.innerHTML = `
             <p class="question-title">${step.question || 'Tulis arti kata ini:'}</p>
             <h1 class="intro-word" style="font-size: 3.5rem; margin-bottom: 40px;">${step.data.korean}</h1>
@@ -632,13 +645,17 @@ function renderStep() {
         setTimeout(() => document.getElementById('typing-input').focus(), 100);
     } else if (step.type === 'typing_ko') {
         currentWritten = []; // Reset writing area
-        // In AI mode, meaning is the Hangul answer. In normal mode, korean is the Hangul.
-        const targetHangul = category === 'AI_Exam' ? step.data.meaning : step.data.korean;
-        const displayWord = category === 'AI_Exam' ? step.data.korean : step.data.meaning;
-
+        const isAI = !!step.direction;
+        
+        // Logical Mapping: 
+        // AI id_to_ko: korean="Halo", meaning="안녕하세요"
+        // Local: korean="안녕하세요", meaning="Halo"
+        const targetHangul = isAI ? step.data.meaning : step.data.korean;
+        const promptWord = isAI ? step.data.korean : step.data.meaning;
+        
         const syllables = targetHangul.split('');
         let bank = [...syllables];
-        const decoys = ['은', '는', '이', '가', '을', '를', '요', '다'];
+        const decoys = ['은', '는', '이', '가', '을', '를', '요', '다', '합', '니'];
         while(bank.length < 8) {
             let d = decoys[Math.floor(Math.random() * decoys.length)];
             if(!bank.includes(d)) bank.push(d);
@@ -647,7 +664,7 @@ function renderStep() {
 
         container.innerHTML = `
             <p class="question-title">${step.question || 'Susun dalam Bahasa Korea:'}</p>
-            <h2 class="intro-meaning" style="margin-bottom: 30px; color: var(--secondary);">${displayWord}</h2>
+            <h2 class="intro-meaning" style="margin-bottom: 30px; color: var(--secondary); font-size: 2.5rem;">${promptWord}</h2>
             <div id="writing-area" class="writing-area card"></div>
             <div class="character-bank">
                 ${bank.map(char => `<button class="char-bubble" onclick="addChar('${char}', this)">${char}</button>`).join('')}
@@ -865,14 +882,14 @@ function handleAction(forceCorrect = false) {
         }
 
         if (!forceCorrect && !isCorrect) {
+            const isAI = !!step.direction;
             if (step.type === 'typing') {
                 const input = document.getElementById('typing-input').value.trim().toLowerCase();
                 const correct = step.data.meaning.trim().toLowerCase();
                 isCorrect = input === correct;
             } else if (step.type === 'typing_ko') {
                 const input = currentWritten.join('');
-                // In AI mode, correct is data.meaning. In normal, it's data.korean.
-                const correct = category === 'AI_Exam' ? step.data.meaning : step.data.korean;
+                const correct = isAI ? step.data.meaning : step.data.korean;
                 isCorrect = input === correct;
             } else if (step.type === 'assemble_hangul') {
                 const inputResult = combine(currentWritten[0], currentWritten[1]);
@@ -887,8 +904,8 @@ function handleAction(forceCorrect = false) {
                 isCorrect = selectedCardId === step.data.romanization;
             } else {
                 if (!selectedCardId) return;
-                // AI Choice uses meaning as ID
-                const correct = category === 'AI_Exam' ? step.data.meaning : step.data.id;
+                // AI Choice uses meaning as ID/Answer
+                const correct = isAI ? step.data.meaning : step.data.id;
                 isCorrect = selectedCardId == correct;
             }
         }
@@ -898,8 +915,23 @@ function handleAction(forceCorrect = false) {
         feedback.style.display = 'flex';
         document.getElementById('status-title').textContent = isCorrect ? 'Bagus!' : 'Kurang Tepat';
         
-        let correctVal = step.data.korean || step.data.char || step.data.result;
-        let meaningVal = step.data.meaning || step.data.romanization || step.data.roman;
+        const isAI = !!step.direction;
+        let correctVal = step.data.korean;
+        let meaningVal = step.data.meaning;
+        
+        if (isAI) {
+            correctVal = step.data.meaning; // AI answer
+            meaningVal = step.data.korean;  // AI prompt
+        } else {
+            if (step.type === 'typing') {
+                correctVal = step.data.meaning;
+                meaningVal = step.data.korean;
+            }
+        }
+        
+        if (step.type === 'choice_sound') { correctVal = step.data.romanization; meaningVal = step.data.char; }
+        if (step.type === 'assemble_hangul') { correctVal = step.data.result; meaningVal = step.data.roman; }
+
         document.getElementById('status-msg').textContent = isCorrect ? 'Jawaban Anda benar.' : `Harusnya: ${correctVal} (${meaningVal})`;
         
         document.getElementById('status-icon').className = isCorrect ? 'fas fa-check' : 'fas fa-times';

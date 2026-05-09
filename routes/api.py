@@ -104,19 +104,21 @@ def generate_ai_session():
     prompt = f"""
     Kamu adalah Pakar Pendidik Bahasa Korea untuk standar ujian TOPIK.
     Tugasmu adalah merancang 8 soal latihan interaktif untuk topik: '{category}' pada tingkat '{level_label}'.
-    
+
     {mistake_info}
-    
+
     ATURAN SOAL:
-    1. Kombinasikan tipe soal: 'choice' (pilihan ganda) dan 'typing' (mengetik).
+    1. Kombinasikan tipe soal: 'choice' (pilihan ganda), 'typing' (mengetik), dan 'speaking' (latihan bicara).
     2. Arah soal harus bervariasi: 'ko_to_id' (Korea ke Indo) dan 'id_to_ko' (Indo ke Korea).
-    3. Untuk 'choice' id_to_ko: target=Bahasa Indonesia, options/answer=Hangul Korea.
-    4. Untuk 'choice' ko_to_id: target=Hangul Korea, options/answer=Bahasa Indonesia.
-    5. Untuk 'typing' id_to_ko: target=Bahasa Indonesia, answer=Hangul Korea.
-    6. Pastikan kosakata sesuai dengan standar tingkat {level_label}.
-    7. Berikan 4 pilihan unik untuk setiap soal 'choice'. Jawaban HARUS ada di pilihan.
-    8. Output HARUS JSON array of objects.
-    
+    3. Untuk tipe 'speaking': target=Hangul yang harus diucapkan, answer=Terjemahannya.
+    4. Untuk tipe 'choice' id_to_ko: target=Bahasa Indonesia, options/answer=Hangul Korea.
+    5. Untuk tipe 'choice' ko_to_id: target=Hangul Korea, options/answer=Bahasa Indonesia.
+    6. Untuk tipe 'typing' id_to_ko: target=Bahasa Indonesia, answer=Hangul Korea.
+    7. Pastikan kosakata sesuai dengan standar tingkat {level_label}.
+    8. Berikan 4 pilihan unik untuk setiap soal 'choice'. Jawaban HARUS ada di pilihan.
+    9. WAJIB sertakan 'romanization' (cara baca latin) untuk setiap kata Hangul yang muncul baik di 'target' maupun 'answer'.
+    10. Output HARUS JSON array of objects.
+
     SKEMA OUTPUT:
     [
       {{
@@ -124,11 +126,13 @@ def generate_ai_session():
         "direction": "id_to_ko",
         "question": "Pilih bahasa Korea yang tepat:",
         "target": "Terima kasih",
-        "options": ["안녕하세요", "감사합니다", "미안합니다", "아니요"],
-        "answer": "감사합니다"
+        "options": ["안녕하세요", "감사합니다", "미ann-ham-ni-da", "아니요"],
+        "answer": "감사합니다",
+        "romanization": "gam-sa-ham-ni-da"
       }}
     ]
     """
+
     
     ai_session = call_gemini(prompt)
     if ai_session:
