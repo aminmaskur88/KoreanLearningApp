@@ -383,146 +383,83 @@ var hearts = 5;
 
 async function initSession() {
     const container = document.getElementById('active-card');
-    container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Menyiapkan materi...</div>';
+    container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Menyiapkan materi oleh AI...</div>';
     
     // Reset steps
     steps = [];
     currentStepIdx = 0;
 
     try {
-        let vocab = [];
-        if (category === 'AI_Exam') {
-            const response = await fetch('/api/generate_ai_exam');
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || "Gagal memuat ujian AI");
-            }
-            const aiData = await response.json();
-            console.log("AI Data received:", aiData);
-            
-            const questions = Array.isArray(aiData) ? aiData : aiData.questions || [];
-            if (questions.length === 0) {
-                throw new Error("AI tidak menghasilkan soal. Silakan berlatih lebih banyak dulu!");
-            }
+        // Fetch current section info for level label
+        const currRes = await fetch('/api/curriculum');
+        const currData = await currRes.json();
+        let levelLabel = "TOPIK I";
+        currData.sections.forEach(s => {
+            if (s.units.find(u => u.category === category)) levelLabel = s.level;
+        });
 
-            // Map AI questions to session steps
-            questions.forEach(q => {
-                steps.push({
-                    type: q.type === 'choice' ? 'choice' : q.type,
-                    data: {
-                        korean: q.target || q.question,
-                        meaning: q.answer,
-                        id: q.answer, 
-                        example: "Latihan khusus AI",
-                        romanization: ""
-                    },
-                    question: q.question,
-                    options: q.options ? q.options.map(o => ({ meaning: o, id: o })) : []
-                });
-            });
-        } else if (category.startsWith('Hangul')) {
-            const response = await fetch('/api/hangul');
-            const hangul = await response.json();
-            
-            let selected = [];
-            if (category === 'Hangul_Konsonan') {
-                selected = hangul.filter(h => h.type === 'Konsonan').sort(() => Math.random() - 0.5).slice(0, 8);
-            } else if (category === 'Hangul_Vokal') {
-                selected = hangul.filter(h => h.type === 'Vokal').sort(() => Math.random() - 0.5).slice(0, 8);
-            } else if (category === 'Hangul_Assembly' || category === 'Hangul') {
-                selected = hangul.sort(() => Math.random() - 0.5).slice(0, 8);
-            }
-            
-            selected.forEach(item => {
-                // Intro step
-                steps.push({ 
-                    type: 'intro_char', 
-                    data: { 
-                        korean: item.char, 
-                        meaning: item.name, 
-                        romanization: item.romanization,
-                        example: item.pronunciation 
-                    } 
-                });
-                
-                // Sound to Char
-                steps.push({ 
-                    type: 'choice_char', 
-                    data: item, 
-                    question: `Pilih huruf untuk bunyi "${item.romanization}":`,
-                    options: generateHangulOptions(item, hangul) 
-                });
-                
-                // Char to Sound
-                steps.push({ 
-                    type: 'choice_sound', 
-                    data: item, 
-                    question: `Apa bunyi dari huruf "${item.char}"?`,
-                    options: generateSoundOptions(item, hangul) 
-                });
-            });
+        // Use AI to generate questions for ANY session
+        const aiUrl = `/api/generate_ai_session?category=${encodeURIComponent(category)}&level=${encodeURIComponent(levelLabel)}`;
+        const response = await fetch(aiUrl);
+        
+        if (!response.ok) throw new Error("Gagal terhubung ke tutor AI.");
+        
+        const aiData = await response.json();
+        const questions = Array.isArray(aiData) ? aiData : aiData.questions || [];
+        
+        if (questions.length === 0) throw new Error("AI tidak menghasilkan materi.");
 
-            // Add assembly tasks if appropriate
-            if (category === 'Hangul_Assembly' || category === 'Hangul') {
-                const consonants = hangul.filter(h => h.type === 'Konsonan');
-                const vowels = hangul.filter(h => h.type === 'Vokal');
-                for (let i = 0; i < 4; i++) {
-                    const c = consonants[Math.floor(Math.random() * consonants.length)];
-                    const v = vowels[Math.floor(Math.random() * vowels.length)];
-                    steps.push({
-                        type: 'assemble_hangul',
-                        data: {
-                            result: combine(c.char, v.char),
-                            parts: [c.char, v.char],
-                            roman: c.romanization.split('/')[0] + v.romanization
-                        }
-                    });
-                }
-            }
-        } else {
-            const response = await fetch(`/api/vocabulary?category=${encodeURIComponent(category)}`);
-            vocab = await response.json();
-            
-            const allRes = await fetch('/api/vocabulary');
-            allVocabPool = await allRes.json();
-            
-            if (vocab.length === 0) {
-                showAlert("Info", "Materi untuk kategori ini belum tersedia.", () => {
-                    window.location.href = "/";
-                });
-                return;
-            }
-            
-            // Take 4 random words for this session
-            const selectedVocab = vocab.sort(() => Math.random() - 0.5).slice(0, 4);
-            
-            selectedVocab.forEach(item => {
-                steps.push({ type: 'intro', data: item });
-                steps.push({ type: 'listening', data: item, options: generateOptions(item) });
-                
-                if (Math.random() > 0.5) {
-                    steps.push({ type: 'choice', data: item, options: generateOptions(item) });
-                } else {
-                    steps.push({ type: 'typing', data: item });
-                }
-                
-                steps.push({ type: 'typing_ko', data: item });
-                steps.push({ type: 'speaking', data: item });
+        questions.forEach(q => {
+            let stepType = q.type;
+            if (q.type === 'typing' && q.direction === 'id_to_ko') stepType = 'typing_ko';
+
+            steps.push({
+                type: stepType,
+                direction: q.direction,
+                data: {
+                    korean: q.target,
+                    meaning: q.answer,
+                    id: q.answer, 
+                    example: `Level: ${levelLabel}`,
+                    romanization: ""
+                },
+                question: q.question,
+                options: q.options ? q.options.map(o => ({ meaning: o, id: o })) : []
             });
+        });
+
+        updateHearts();
+        renderStep();
+    } catch (e) {
+        console.warn("AI Generation failed, falling back to local vocab:", e);
+        // Fallback to local vocab logic if AI fails
+        startLocalFallback();
+    }
+}
+
+async function startLocalFallback() {
+    try {
+        const response = await fetch(`/api/vocabulary?category=${encodeURIComponent(category)}`);
+        const vocab = await response.json();
+        
+        if (vocab.length === 0) {
+            showAlert("Maaf", "Materi belum tersedia di database lokals.", () => window.location.href = "/");
+            return;
         }
 
-        // Shuffle practice steps
-        const introSteps = steps.filter(s => s.type.startsWith('intro'));
-        const practiceSteps = steps.filter(s => !s.type.startsWith('intro')).sort(() => Math.random() - 0.5);
-        steps = [...introSteps, ...practiceSteps];
+        const selectedVocab = vocab.sort(() => Math.random() - 0.5).slice(0, 4);
+        selectedVocab.forEach(item => {
+            steps.push({ type: 'intro', data: item });
+            steps.push({ type: 'listening', data: item, options: generateOptions(item) });
+            steps.push({ type: 'choice', data: item, options: generateOptions(item) });
+            steps.push({ type: 'typing_ko', data: item });
+        });
         
         updateHearts();
         renderStep();
     } catch (e) {
-        console.error("Session Init Error:", e);
-        showAlert("Maaf", e.message, () => {
-            window.location.href = "/";
-        });
+        showAlert("Error", "Gagal memuat materi cadangan.");
+        window.location.href = "/";
     }
 }
 
@@ -619,12 +556,13 @@ function renderStep() {
     } else if (step.type === 'choice' || step.type === 'choice_char') {
         container.innerHTML = `
             <p class="question-title">${step.question || 'Pilih arti yang benar:'}</p>
-            ${step.type === 'choice_char' ? '' : `
+            ${step.type === 'choice_char' || category === 'AI_Exam' ? '' : `
                 <div class="hint-wrapper">
                     <h1 class="intro-word clickable" onclick="toggleHint(this, '${step.data.romanization}')" style="font-size: 3rem;">${step.data.korean}</h1>
                     <div class="hint-bubble" id="hint-bubble">Ketuk untuk cara baca</div>
                 </div>
             `}
+            ${category === 'AI_Exam' ? `<h1 class="intro-word" style="font-size: 3rem; margin-bottom:20px;">${step.data.korean}</h1>` : ''}
             <div class="options-stack">
                 ${step.options.map(opt => `
                     <button class="option-btn" onclick="selectOption('${step.type === 'choice_char' ? opt.char : opt.id}', this)">
@@ -687,16 +625,20 @@ function renderStep() {
         `;
     } else if (step.type === 'typing') {
         container.innerHTML = `
-            <p class="question-title">Tulis arti kata ini dalam Bahasa Indonesia:</p>
+            <p class="question-title">${step.question || 'Tulis arti kata ini:'}</p>
             <h1 class="intro-word" style="font-size: 3.5rem; margin-bottom: 40px;">${step.data.korean}</h1>
             <input type="text" id="typing-input" class="typing-input" placeholder="Ketik di sini..." autocomplete="off">
         `;
         setTimeout(() => document.getElementById('typing-input').focus(), 100);
     } else if (step.type === 'typing_ko') {
         currentWritten = []; // Reset writing area
-        const syllables = step.data.korean.split('');
+        // In AI mode, meaning is the Hangul answer. In normal mode, korean is the Hangul.
+        const targetHangul = category === 'AI_Exam' ? step.data.meaning : step.data.korean;
+        const displayWord = category === 'AI_Exam' ? step.data.korean : step.data.meaning;
+
+        const syllables = targetHangul.split('');
         let bank = [...syllables];
-        const decoys = ['은', '는', '이', '가', '을', '를'];
+        const decoys = ['은', '는', '이', '가', '을', '를', '요', '다'];
         while(bank.length < 8) {
             let d = decoys[Math.floor(Math.random() * decoys.length)];
             if(!bank.includes(d)) bank.push(d);
@@ -704,15 +646,16 @@ function renderStep() {
         bank = bank.sort(() => Math.random() - 0.5);
 
         container.innerHTML = `
-            <p class="question-title">Susun dalam Bahasa Korea:</p>
-            <h2 class="intro-meaning" style="margin-bottom: 30px; color: var(--secondary);">${step.data.meaning}</h2>
+            <p class="question-title">${step.question || 'Susun dalam Bahasa Korea:'}</p>
+            <h2 class="intro-meaning" style="margin-bottom: 30px; color: var(--secondary);">${displayWord}</h2>
             <div id="writing-area" class="writing-area card"></div>
             <div class="character-bank">
                 ${bank.map(char => `<button class="char-bubble" onclick="addChar('${char}', this)">${char}</button>`).join('')}
             </div>
             <button class="btn-secondary" style="margin-top: 10px; border:none; background:none; font-size: 0.8rem;" onclick="clearWriting()">Hapus Semua</button>
         `;
-    } else if (step.type === 'speaking') {
+    }
+ else if (step.type === 'speaking') {
         container.innerHTML = `
             <p class="question-title">Ucapkan kata ini:</p>
             <div class="speaking-target" onclick="speak('${step.data.korean}')">
@@ -928,7 +871,9 @@ function handleAction(forceCorrect = false) {
                 isCorrect = input === correct;
             } else if (step.type === 'typing_ko') {
                 const input = currentWritten.join('');
-                isCorrect = input === step.data.korean;
+                // In AI mode, correct is data.meaning. In normal, it's data.korean.
+                const correct = category === 'AI_Exam' ? step.data.meaning : step.data.korean;
+                isCorrect = input === correct;
             } else if (step.type === 'assemble_hangul') {
                 const inputResult = combine(currentWritten[0], currentWritten[1]);
                 isCorrect = inputResult === step.data.result;
@@ -942,7 +887,9 @@ function handleAction(forceCorrect = false) {
                 isCorrect = selectedCardId === step.data.romanization;
             } else {
                 if (!selectedCardId) return;
-                isCorrect = selectedCardId == step.data.id;
+                // AI Choice uses meaning as ID
+                const correct = category === 'AI_Exam' ? step.data.meaning : step.data.id;
+                isCorrect = selectedCardId == correct;
             }
         }
         
@@ -961,15 +908,17 @@ function handleAction(forceCorrect = false) {
             hearts--;
             updateHearts();
             
-            // Report mistake to AI tracking
-            fetch('/api/report_mistake', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    item_type: step.data.char ? 'hangul' : 'vocab', 
-                    item_id: step.data.id 
-                })
-            });
+            // Report mistake to AI tracking (Only for normal sessions)
+            if (category !== 'AI_Exam') {
+                fetch('/api/report_mistake', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        item_type: step.data.char ? 'hangul' : 'vocab', 
+                        item_id: step.data.id 
+                    })
+                });
+            }
 
             // Push failed step to end
             steps.push(JSON.parse(JSON.stringify(step)));

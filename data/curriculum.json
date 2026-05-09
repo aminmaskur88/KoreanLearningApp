@@ -4,7 +4,7 @@
     {
       "id": 1,
       "name": "Dasar Hangul",
-      "level": "Huruf & Cara Baca",
+      "level": "TOPIK I - Level 1 (Alfabet)",
       "units": [
         {
           "id": 1,
@@ -42,15 +42,15 @@
     },
     {
       "id": 2,
-      "name": "Rookie",
-      "level": "Beginner",
+      "name": "Komunikasi Dasar",
+      "level": "TOPIK I - Level 1 (Beginner)",
       "units": [
         {
           "id": 5,
           "title": "Salam",
           "type": "session",
           "category": "Salam",
-          "progress_id": "Salam",
+          "progress_id": "r_salam",
           "icon": "fas fa-hand-sparkles"
         },
         {
@@ -58,7 +58,7 @@
           "title": "Angka",
           "type": "session",
           "category": "Angka",
-          "progress_id": "Angka",
+          "progress_id": "r_angka",
           "icon": "fas fa-list-ol"
         },
         {
@@ -66,7 +66,7 @@
           "title": "Keluarga",
           "type": "session",
           "category": "Keluarga",
-          "progress_id": "Keluarga",
+          "progress_id": "r_keluarga",
           "icon": "fas fa-users"
         },
         {
@@ -74,22 +74,22 @@
           "title": "Makanan",
           "type": "session",
           "category": "Makanan",
-          "progress_id": "Makanan",
+          "progress_id": "r_makanan",
           "icon": "fas fa-utensils"
         }
       ]
     },
     {
       "id": 3,
-      "name": "Explorer",
-      "level": "A1",
+      "name": "Kehidupan Sehari-hari",
+      "level": "TOPIK I - Level 2 (Elementary)",
       "units": [
         {
           "id": 9,
           "title": "Hobi",
           "type": "session",
           "category": "Hobi",
-          "progress_id": "Hobi",
+          "progress_id": "e_hobi",
           "icon": "fas fa-gamepad"
         },
         {
@@ -97,16 +97,218 @@
           "title": "Sekolah",
           "type": "session",
           "category": "Sekolah",
-          "progress_id": "Sekolah",
+          "progress_id": "e_sekolah",
           "icon": "fas fa-school"
         },
         {
           "id": 11,
+          "title": "Cuaca",
+          "type": "session",
+          "category": "Cuaca",
+          "progress_id": "e_cuaca",
+          "icon": "fas fa-cloud-sun"
+        },
+        {
+          "id": 12,
+          "title": "Belanja",
+          "type": "session",
+          "category": "Belanja",
+          "progress_id": "e_belanja",
+          "icon": "fas fa-shopping-cart"
+        },
+        {
+          "id": 13,
           "title": "Transportasi",
           "type": "session",
           "category": "Transportasi",
-          "progress_id": "Transportasi",
+          "progress_id": "e_transport",
           "icon": "fas fa-bus"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Traveler & Dunia",
+      "level": "TOPIK I - Level 2 (Pre-Intermediate)",
+      "units": [
+        {
+          "id": 14,
+          "title": "Restoran",
+          "type": "session",
+          "category": "Restoran",
+          "progress_id": "t_restoran",
+          "icon": "fas fa-utensils"
+        },
+        {
+          "id": 15,
+          "title": "Liburan",
+          "type": "session",
+          "category": "Liburan",
+          "progress_id": "t_liburan",
+          "icon": "fas fa-plane"
+        },
+        {
+          "id": 16,
+          "title": "Arah Jalan",
+          "type": "session",
+          "category": "Arah",
+          "progress_id": "t_arah",
+          "icon": "fas fa-map-signs"
+        },
+        {
+          "id": 17,
+          "title": "Kesehatan",
+          "type": "session",
+          "category": "Kesehatan",
+          "progress_id": "t_sehat",
+          "icon": "fas fa-heartbeat"
+        },
+        {
+          "id": 18,
+          "title": "Emosi",
+          "type": "session",
+          "category": "Emosi",
+          "progress_id": "t_emosi",
+          "icon": "fas fa-smile"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Trailblazer",
+      "level": "TOPIK II - Level 3 (Intermediate)",
+      "units": [
+        {
+          "id": 19,
+          "title": "Grammar Lanjutan",
+          "type": "session",
+          "category": "Grammar_Adv",
+          "progress_id": "tb_grammar",
+          "icon": "fas fa-layer-group"
+        },
+        {
+          "id": 20,
+          "title": "Budaya Korea",
+          "type": "session",
+          "category": "Budaya",
+          "progress_id": "tb_budaya",
+          "icon": "fas fa-landmark"
+        },
+        {
+          "id": 21,
+          "title": "Diskusi",
+          "type": "session",
+          "category": "Diskusi",
+          "progress_id": "tb_diskusi",
+          "icon": "fas fa-comments"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Professional & News",
+      "level": "TOPIK II - Level 4 (Upper Intermediate)",
+      "units": [
+        {
+          "id": 22,
+          "title": "Berita & Media",
+          "type": "session",
+          "category": "Media",
+          "progress_id": "p_media",
+          "icon": "fas fa-newspaper"
+        },
+        {
+          "id": 23,
+          "title": "Dunia Kerja",
+          "type": "session",
+          "category": "Pekerjaan_Pro",
+          "progress_id": "p_kerja",
+          "icon": "fas fa-briefcase"
+        },
+        {
+          "id": 24,
+          "title": "Lingkungan",
+          "type": "session",
+          "category": "Lingkungan",
+          "progress_id": "p_alam",
+          "icon": "fas fa-leaf"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Society & Academics",
+      "level": "TOPIK II - Level 5 (Advanced)",
+      "units": [
+        {
+          "id": 25,
+          "title": "Politik & Ekonomi",
+          "type": "session",
+          "category": "Politik",
+          "progress_id": "a_politik",
+          "icon": "fas fa-balance-scale"
+        },
+        {
+          "id": 26,
+          "title": "Ilmu Pengetahuan",
+          "type": "session",
+          "category": "Sains",
+          "progress_id": "a_sains",
+          "icon": "fas fa-flask"
+        },
+        {
+          "id": 27,
+          "title": "Isu Sosial",
+          "type": "session",
+          "category": "Sosial",
+          "progress_id": "a_sosial",
+          "icon": "fas fa-users-cog"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Philosophy & Mastery",
+      "level": "TOPIK II - Level 6 (Master)",
+      "units": [
+        {
+          "id": 28,
+          "title": "Sastra & Puisi",
+          "type": "session",
+          "category": "Sastra",
+          "progress_id": "m_sastra",
+          "icon": "fas fa-feather-alt"
+        },
+        {
+          "id": 29,
+          "title": "Sejarah Korea",
+          "type": "session",
+          "category": "Sejarah",
+          "progress_id": "m_sejarah",
+          "icon": "fas fa-monument"
+        },
+        {
+          "id": 30,
+          "title": "Debat & Opini",
+          "type": "session",
+          "category": "Debat",
+          "progress_id": "m_debat",
+          "icon": "fas fa-microphone-alt"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Daily Refresh",
+      "level": "Review & Mastery",
+      "units": [
+        {
+          "id": 31,
+          "title": "Review Harian",
+          "type": "session",
+          "category": "AI_Exam",
+          "progress_id": "dr_review",
+          "icon": "fas fa-sync-alt"
         }
       ]
     }

@@ -80,68 +80,60 @@ def call_gemini(prompt):
             
     return None
 
-@api_bp.route('/generate_ai_exam')
-def generate_ai_exam():
-    section_id = request.args.get('section_id')
+@api_bp.route('/generate_ai_session')
+def generate_ai_session():
+    category = request.args.get('category', 'Umum')
+    level_label = request.args.get('level', 'TOPIK I')
     
     conn = get_db_connection()
-    # Get most frequent mistakes
+    # Get user mistakes for context
     mistakes = conn.execute('''
         SELECT m.*, v.korean, v.meaning 
         FROM user_mistakes m 
         JOIN vocabulary v ON m.item_id = v.id 
         WHERE m.item_type = 'vocab' 
-        ORDER BY m.wrong_count DESC LIMIT 15
+        ORDER BY m.wrong_count DESC LIMIT 5
     ''').fetchall()
     conn.close()
 
-    if not mistakes:
-        return jsonify({"error": "Belum ada data kesalahan yang cukup. Silakan berlatih lebih banyak dulu!"}), 404
+    mistake_info = ""
+    if mistakes:
+        mistake_list = [f"{m['korean']} ({m['meaning']})" for m in mistakes]
+        mistake_info = f"Prioritaskan pengulangan materi untuk kata-kata yang murid sering salah ini: {', '.join(mistake_list)}."
 
-    mistake_list = [{"korean": m['korean'], "meaning": m['meaning'], "errors": m['wrong_count']} for m in mistakes]
-    
     prompt = f"""
-    Kamu adalah pakar pendidik Bahasa Korea. Tugasmu adalah membuat 10 soal ujian personal untuk membantu murid memperbaiki kesalahannya.
+    Kamu adalah Pakar Pendidik Bahasa Korea untuk standar ujian TOPIK.
+    Tugasmu adalah merancang 8 soal latihan interaktif untuk topik: '{category}' pada tingkat '{level_label}'.
     
-    DAFTAR KATA YANG SERING SALAH (Prioritaskan ini):
-    {json.dumps(mistake_list)}
+    {mistake_info}
     
-    ATURAN PEMBUATAN SOAL:
-    1. Tiap soal harus unik dan berkualitas tinggi.
-    2. Tipe soal: 'choice' (pilihan ganda) atau 'typing' (mengetik jawaban).
-    3. Untuk tipe 'choice':
-       - WAJIB memiliki tepat 4 pilihan (options).
-       - Pilihan TIDAK BOLEH ada yang duplikat/sama.
-       - Hanya boleh ada 1 jawaban yang benar (answer).
-       - Jawaban (answer) WAJIB ada di dalam daftar pilihan (options).
-       - Distraktor (pilihan salah) harus masuk akal tapi jelas salah. Jangan gunakan variasi typo yang membingungkan seperti '감사합니', '감사함니'. Gunakan kata lain yang berbeda maknanya.
-    4. Gunakan instruksi soal dalam Bahasa Indonesia yang alami.
+    ATURAN SOAL:
+    1. Kombinasikan tipe soal: 'choice' (pilihan ganda) dan 'typing' (mengetik).
+    2. Arah soal harus bervariasi: 'ko_to_id' (Korea ke Indo) dan 'id_to_ko' (Indo ke Korea).
+    3. Untuk 'choice' id_to_ko: target=Bahasa Indonesia, options/answer=Hangul Korea.
+    4. Untuk 'choice' ko_to_id: target=Hangul Korea, options/answer=Bahasa Indonesia.
+    5. Untuk 'typing' id_to_ko: target=Bahasa Indonesia, answer=Hangul Korea.
+    6. Pastikan kosakata sesuai dengan standar tingkat {level_label}.
+    7. Berikan 4 pilihan unik untuk setiap soal 'choice'. Jawaban HARUS ada di pilihan.
+    8. Output HARUS JSON array of objects.
     
-    FORMAT JSON (Array of Objects):
+    SKEMA OUTPUT:
     [
       {{
         "type": "choice",
-        "question": "Apa arti dari kata '안녕하세요'?",
-        "target": "안녕하세요",
-        "options": ["Halo", "Sore", "Tidur", "Makan"],
-        "answer": "Halo"
-      }},
-      {{
-        "type": "typing",
-        "question": "Bagaimana cara menulis 'Terima kasih' dalam Hangul?",
+        "direction": "id_to_ko",
+        "question": "Pilih bahasa Korea yang tepat:",
         "target": "Terima kasih",
-        "options": [],
+        "options": ["안녕하세요", "감사합니다", "미안합니다", "아니요"],
         "answer": "감사합니다"
       }}
     ]
     """
     
-    ai_exam = call_gemini(prompt)
-    if ai_exam:
-        return jsonify(ai_exam)
-    else:
-        # Fallback to normal vocab if AI fails
-        return jsonify({"error": "Gagal memanggil AI"}), 500
+    ai_session = call_gemini(prompt)
+    if ai_session:
+        return jsonify(ai_session)
+    return jsonify({"error": "AI gagal merumuskan sesi"}), 500
 
 @api_bp.route('/curriculum')
 def get_curriculum():
